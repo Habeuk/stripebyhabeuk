@@ -1,0 +1,6 @@
+stripebyhabeuk.settings_form:
+  title: stripe by habeuk
+  description: Configure stripe by habeuk.
+  parent: system.admin_config_system
+  route_name: stripebyhabeuk.settings_form
+  weight: 10

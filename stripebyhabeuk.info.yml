@@ -1,0 +1,6 @@
+name: stripe by habeuk
+type: module
+description: module permettant de faire un paiement sur sur skype via un service
+package: Custom
+core: 8.x
+core_version_requirement: ^8 || ^9

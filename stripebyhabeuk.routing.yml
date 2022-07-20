@@ -1,0 +1,15 @@
+stripebyhabeuk.example:
+  path: '/stripebyhabeuk/example'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\stripebyhabeuk\Controller\StripebyhabeukController::build'
+  requirements:
+    _permission: 'access content'
+
+stripebyhabeuk.settings_form:
+  path: '/admin/config/system/stripebyhabeuk'
+  defaults:
+    _title: 'stripe by habeuk settings'
+    _form: 'Drupal\stripebyhabeuk\Form\SettingsForm'
+  requirements:
+    _permission: 'administer stripebyhabeuk configuration'

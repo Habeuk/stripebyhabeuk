@@ -44,6 +44,7 @@ class SettingsForm extends ConfigFormBase {
         'dev' => 'Dev'
       ]
     ];
+    
     //
     $form['api_key_test'] = [
       '#type' => 'textfield',
@@ -51,14 +52,13 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('api_key_test'),
       '#description' => 'pk_test_***'
     ];
-    
+    //
     $form['secret_key_test'] = [
       '#type' => 'textfield',
       '#title' => $this->t(' Clé secrète test '),
       '#default_value' => $config->get('secret_key_test'),
       '#description' => 'sk_test_***'
     ];
-    
     //
     $form['api_key_live'] = [
       '#type' => 'textfield',
@@ -66,6 +66,15 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('api_key_live'),
       '#description' => 'pk_live_***'
     ];
+    // webform keys
+    $form['api_key_webform'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t(' Api key Webform '),
+      '#default_value' => $config->get('api_key_webform'),
+      '#description' => 'whsec_...'
+    ];
+    
+    //
     return parent::buildForm($form, $form_state);
   }
   
@@ -90,6 +99,7 @@ class SettingsForm extends ConfigFormBase {
     $config->set('mode', $form_state->getValue('mode'));
     $config->set('api_key_test', $form_state->getValue('api_key_test'));
     $config->set('secret_key_test', $form_state->getValue('secret_key_test'));
+    $config->set('api_key_live', $form_state->getValue('api_key_live'));
     $config->set('api_key_live', $form_state->getValue('api_key_live'));
     $config->save();
     parent::submitForm($form, $form_state);

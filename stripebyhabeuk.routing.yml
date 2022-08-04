@@ -1,8 +1,8 @@
-stripebyhabeuk.example:
-  path: '/stripebyhabeuk/example'
+stripebyhabeuk.webhook:
+  path: '/stripebyhabeuk/webhook/charge'
   defaults:
     _title: 'Example'
-    _controller: '\Drupal\stripebyhabeuk\Controller\StripebyhabeukController::build'
+    _controller: '\Drupal\stripebyhabeuk\Controller\StripebyhabeukController::webhookCharge'
   requirements:
     _permission: 'access content'
 
@@ -12,4 +12,4 @@ stripebyhabeuk.settings_form:
     _title: 'stripe by habeuk settings'
     _form: 'Drupal\stripebyhabeuk\Form\SettingsForm'
   requirements:
-    _permission: 'administer stripebyhabeuk configuration'
+    _permission: 'Administer stripebyhabeuk configuration'

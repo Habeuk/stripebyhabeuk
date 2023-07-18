@@ -1,0 +1,22 @@
+{#
+/**
+ * @file payment_intents.html.twig
+ * Default theme implementation to present Payment intents data.
+ *
+ * This template is used when viewing Payment intents pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_payment_intents()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('payment_intents') }}>
+  {% if content %}
+    {{- content -}}
+  {% endif %}
+</div>

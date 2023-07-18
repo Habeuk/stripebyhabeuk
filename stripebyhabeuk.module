@@ -1,6 +1,7 @@
 <?php
 
 /**
+ *
  * @file
  * Primary module hooks for stripe by habeuk module.
  *
@@ -8,3 +9,18 @@
  * This file is no longer required in Drupal 8.
  * @see https://www.drupal.org/node/2217931
  */
+function stripebyhabeuk_library_info_alter(&$libraries, $extension) {
+  // \Drupal::messenger()->addMessage('stripebyhabeuk_library_info_alter');
+}
+
+function stripebyhabeuk_page_attachments(array &$attachments) {
+  // \Drupal::messenger()->addMessage('stripebyhabeuk_page_attachments');
+}
+
+function stripebyhabeuk_page_attachments_alter(array &$attachments) {
+  // \Drupal::messenger()->addMessage('stripebyhabeuk_page_attachments_alter');
+}
+
+
+
+

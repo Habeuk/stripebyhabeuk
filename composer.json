@@ -9,5 +9,8 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+    	"drupal/commerce": "^2.35",
+    	"worldpay/worldpay-lib-php": "^2.1"
+    }
 }

@@ -1,0 +1,5 @@
+entity.payment_intents.add_form:
+  route_name: entity.payment_intents.add_form
+  title: 'Add Payment intents'
+  appears_on:
+    - entity.payment_intents.collection

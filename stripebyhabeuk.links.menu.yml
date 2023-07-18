@@ -4,3 +4,17 @@ stripebyhabeuk.settings_form:
   parent: system.admin_config_system
   route_name: stripebyhabeuk.settings_form
   weight: 10
+
+# Payment intents menu items definition
+entity.payment_intents.collection:
+  title: 'Payment intents list'
+  route_name: entity.payment_intents.collection
+  description: 'List Payment intents entities'
+  parent: system.admin_structure
+  weight: 100
+
+payment_intents.admin.structure.settings:
+  title: 'Payment intents settings'
+  description: 'Configure Payment intents entities'
+  route_name: payment_intents.settings
+  parent: system.admin_structure

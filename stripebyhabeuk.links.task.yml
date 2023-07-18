@@ -1,0 +1,26 @@
+# Payment intents routing definition
+payment_intents.settings_tab:
+  route_name: payment_intents.settings
+  title: 'Settings'
+  base_route: payment_intents.settings
+
+entity.payment_intents.canonical:
+  route_name: entity.payment_intents.canonical
+  base_route: entity.payment_intents.canonical
+  title: 'View'
+
+entity.payment_intents.edit_form:
+  route_name: entity.payment_intents.edit_form
+  base_route: entity.payment_intents.canonical
+  title: 'Edit'
+
+entity.payment_intents.version_history:
+  route_name: entity.payment_intents.version_history
+  base_route: entity.payment_intents.canonical
+  title: 'Revisions'
+
+entity.payment_intents.delete_form:
+  route_name:  entity.payment_intents.delete_form
+  base_route:  entity.payment_intents.canonical
+  title: Delete
+  weight: 10

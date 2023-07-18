@@ -1,0 +1,31 @@
+add payment intents entities:
+  title: 'Create new Payment intents entities'
+
+administer payment intents entities:
+  title: 'Administer Payment intents entities'
+  description: 'Allow to access the administration form to configure Payment intents entities.'
+  restrict access: true
+
+delete payment intents entities:
+  title: 'Delete Payment intents entities'
+
+edit payment intents entities:
+  title: 'Edit Payment intents entities'
+
+view published payment intents entities:
+  title: 'View published Payment intents entities'
+
+view unpublished payment intents entities:
+  title: 'View unpublished Payment intents entities'
+
+view all payment intents revisions:
+  title: 'View all Payment intents revisions'
+
+revert all payment intents revisions:
+  title: 'Revert all Payment intents revisions'
+  description: 'Role requires permission <em>view Payment intents revisions</em> and <em>edit rights</em> for payment intents entities in question or <em>administer payment intents entities</em>.'
+
+delete all payment intents revisions:
+  title: 'Delete all revisions'
+  description: 'Role requires permission to <em>view Payment intents revisions</em> and <em>delete rights</em> for payment intents entities in question or <em>administer payment intents entities</em>.'
+

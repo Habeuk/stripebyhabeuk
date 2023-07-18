@@ -1,4 +1,22 @@
 # Custom module library for general purposes.
+
+
+stripejsinit:
+  js:
+    js/stripejsinit.js: {}
+  css:
+    component:
+      css/stripejsinit.css: {preprocess: false}
+  dependencies:    
+    - stripebyhabeuk/stripejs
+    - core/drupalSettings
+    
+
+# Load stripeJs from stripe serveur, don't cache.
+stripejs:
+  js:
+    https://js.stripe.com/v3: { type: external, minified: false, preprocess: false }
+    
 stripebyhabeuk:
   js:
     js/stripebyhabeuk.js: {}

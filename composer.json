@@ -11,6 +11,6 @@
     "minimum-stability": "dev",
     "require": {
     	"drupal/commerce": "^2.35",
-    	"worldpay/worldpay-lib-php": "^2.1"
+    	"habeuk/stripe": "^1.0|dev-1x"
     }
 }

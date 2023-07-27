@@ -1,6 +1,6 @@
 {
-    "name": "habeuk/stripebyhabeuk",
-    "type": "drupal-custom-module",
+    "name": "stephane888/stripebyhabeuk",
+    "type": "drupal-module-custom",
     "license": "MIT",
     "authors": [
         {
@@ -11,6 +11,6 @@
     "minimum-stability": "dev",
     "require": {
     	"drupal/commerce": "^2.35",
-    	"habeuk/stripe": "1.0|dev-1x"
+    	"worldpay/worldpay-lib-php": "^2.1"
     }
 }

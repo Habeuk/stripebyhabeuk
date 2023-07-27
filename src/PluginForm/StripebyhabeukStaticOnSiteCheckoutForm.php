@@ -6,12 +6,7 @@ use Drupal\commerce_payment\PluginForm\PaymentMethodAddForm;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Security\TrustedCallbackInterface;
-use Drupal\user\UserInterface;
-use Stripe\SetupIntent;
 use Drupal\Component\Utility\Html;
-use Habeuk\Stripe\GateWay;
-use Habeuk\Stripe\Exception\ExceptionStripe;
-use Stripe\Exception\ApiErrorException;
 
 /**
  * Provides payment form for Stripe.
@@ -32,15 +27,11 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
     // Set our key to settings array.
     /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite $plugin */
     $plugin = $this->plugin;
-    $GateWay = new GateWay($plugin->getSecretKey());
     
     /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
     $payment_method = $this->entity;
     $idHtml = Html::getUniqueId('cart-ifs-' . rand(100, 999));
-    $client_secret = null;
-    // Alter the form with Stripe specific needs.
-    $element['#attributes']['class'][] = 'stripe-by-habeuk-form';
-    
+    $idHtml = !empty($element['#id']) ? $element['#id'] : Html::getUniqueId('cart-ifs-' . rand(100, 999));
     // space to add iframe to collect cart information by StripeJs.
     $element['titre_cart'] = [
       '#type' => 'html_tag',
@@ -48,13 +39,15 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
       "#attributes" => [],
       '#value' => 'Information sur la carte'
     ];
-    $element['stripe_payment_method_id'] = [
+    // ici on cree des champs vide envue de passer la validation de la CB.
+    
+    // permet de sauvegarder l'id de PaymentMethod.
+    $element['stripebyhabeuk_payment_method_id'] = [
       '#type' => 'hidden',
       '#attributes' => [
         'id' => 'payment-method-id' . $idHtml
       ]
     ];
-    
     // space to add iframe to collect cart information by StripeJs.
     $element['cart_information'] = [
       '#type' => 'html_tag',
@@ -64,62 +57,6 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
         'class' => []
       ]
     ];
-    /**
-     *
-     * @var \Drupal\prise_rendez_vous\Plugin\Commerce\CheckoutFlow\PriseRendezVousCheckoutflow $formObject
-     */
-    $formObject = $form_state->getFormObject();
-    if (method_exists($formObject, 'getOrder')) {
-      /**
-       *
-       * @var \Drupal\commerce_order\Entity\Order $order
-       */
-      $order = $formObject->getOrder();
-      
-      try {
-        $montant = $order->getTotalPrice()->getNumber();
-        $label = $order->label();
-        // on verifie si l'intention de payer a deja ete crrer
-        $paymentIntentId = $this->getPaymentIndent($order->id());
-        if ($paymentIntentId) {
-          // Maj des informations de la commande.
-          $PaymentIntents = $GateWay->UpdatePaymentIntents($paymentIntentId, $montant, $label);
-        }
-        else {
-          // On cree l'intention de payer au niveau de stripe.
-          $PaymentIntents = $GateWay->CreatePaymentIntents($montant, $label);
-          $values = [
-            'paymentintents_id' => $PaymentIntents->offsetGet('id'),
-            'payment_intents_status' => $PaymentIntents->offsetGet('status'),
-            'commerce_order' => $order->id()
-          ];
-          $this->setPaymentIndent($values);
-        }
-        
-        $client_secret = $PaymentIntents->offsetGet('client_secret');
-      }
-      catch (ExceptionStripe $e) {
-        $this->logger->error($e->getMessage());
-        \Drupal::messenger()->addError($e->getMessage());
-        return [];
-      }
-      catch (ApiErrorException $e) {
-        $this->logger->error($e->getMessage());
-        \Drupal::messenger()->addError($e->getMessage());
-        /**
-         * il ya un probleme d'autre de validation, il se peut que
-         * $PaymentIntents
-         * doit etre crrer ailleurs.
-         * ( ou alors on retourne un message d'erreur ).
-         */
-        $form_state->setError($element, $e->getMessage());
-        return [];
-      }
-      $element['stripe_payment_intents_id'] = [
-        '#type' => 'hidden',
-        '#value' => $PaymentIntents->offsetGet('id')
-      ];
-    }
     
     // js.
     $element['#attached']['library'][] = 'stripebyhabeuk/stripejsinit';
@@ -127,28 +64,13 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
     $element['#attached']['drupalSettings']['stripebyhabeuk'] = [
       'publishableKey' => $plugin->getPublishableKey(),
       'idhtml' => $idHtml,
-      'paymentindent_client_secret' => $client_secret,
       'enable_credit_card_logos' => FALSE
     ];
-    
-    // $dd = [
-    // 'paid' => $order->getTotalPaid(),
-    // 'price' => [
-    // $order->getTotalPrice()->getNumber(),
-    // $order->getTotalPrice()->getCurrencyCode()
-    // ],
-    // 'title' => $order->label(),
-    // 'key' => $plugin->getPublishableKey(),
-    // 'PaymentIntents' => $PaymentIntents
-    // ];
-    // \Stephane888\Debug\debugLog::kintDebugDrupal($dd,
-    // "buildCreditCardForm--debug--", true);
     
     $cacheability = new CacheableMetadata();
     $cacheability->addCacheableDependency($this->entity);
     $cacheability->setCacheMaxAge(0);
     $cacheability->applyTo($element);
-    
     return $element;
   }
   
@@ -174,6 +96,8 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
   
   /**
    * Validates the credit card form.
+   * Une partie de la validation doit etre effectuer par stripe.js, mais on va
+   * verifier quelques informations.
    *
    * @param array $element
    *        The credit card form element.
@@ -181,7 +105,25 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
    *        The current state of the complete form.
    */
   protected function validateCreditCardForm(array &$element, FormStateInterface $form_state) {
-    // The JS library performs its own validation.
+    $values = $form_state->getValue($element['#parents']);
+    // on verifie que la methode de paiement a bien ete creer.
+    if (empty($values['stripebyhabeuk_payment_method_id'])) {
+      $form_state->setError($element['stripebyhabeuk_payment_method_id'], $this->t("Une erreur s'est produite, nous n'avons pas pu verifier votre Carte bancaire"));
+    }
+  }
+  
+  /**
+   * Handles the submission of the credit card form.
+   *
+   * @param array $element
+   *        The credit card form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *        The current state of the complete form.
+   */
+  protected function submitCreditCardForm(array $element, FormStateInterface $form_state) {
+    // les informations de la carte vont etre recuperer à partir du serveur de
+    // Stripe.
+    // ( elles ont ete enregistrer via le js ).
   }
   
   /**

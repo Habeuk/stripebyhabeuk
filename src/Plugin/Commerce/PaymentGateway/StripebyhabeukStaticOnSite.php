@@ -14,6 +14,8 @@ use Habeuk\Stripe\GateWay;
 use Drupal\commerce_payment\Exception\InvalidRequestException;
 use Drupal\commerce_payment\CreditCard;
 use Drupal\commerce_payment\Exception\HardDeclineException;
+use Drupal\stripebyhabeuk\ErrorHelper;
+use Stripe\PaymentIntent;
 
 /**
  * Provides the example for payement on commece_stripe.
@@ -34,9 +36,137 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements StripebyHabeukInterface {
   
   public function deletePaymentMethod(PaymentMethodInterface $payment_method) {
+    // Delete the remote record.
+    $payment_method_remote_id = $payment_method->getRemoteId();
+    try {
+      $GateWay = new GateWay($this->getSecretKey());
+      /**
+       *
+       * @var \Stripe\StripeClient $stribeLib
+       */
+      $stribeLib = $GateWay->getInstance();
+      $remote_payment_method = $stribeLib->paymentMethods->retrieve($payment_method_remote_id);
+      if ($remote_payment_method->customer) {
+        $remote_payment_method->detach();
+      }
+    }
+    catch (ApiErrorException $e) {
+      ErrorHelper::handleException($e);
+    }
+    $payment_method->delete();
   }
   
   /**
+   * Elle se charge d'effectuer le paiement via l'API et on cree l'entite
+   * payement si le paiement a reussi ou est en attente.
+   * à ce stade le paymentintent a reussi.
+   *
+   * This method gets called during the checkout process, when the Payment
+   * Information form is submitted.It is also called when a payment is added to
+   * an order manually.
+   *
+   * {@inheritdoc}
+   * @see \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsStoredPaymentMethodsInterface::createPayment()
+   * @see https://docs.drupalcommerce.org/commerce2/developer-guide/payments/create-payment-gateway/on-site-gateways/creating-payments
+   */
+  public function createPayment(PaymentInterface $payment, $capture = TRUE) {
+    // On definie le nouveau paiement.
+    $this->assertPaymentState($payment, [
+      'new'
+    ]);
+    $payment_method = $payment->getPaymentMethod();
+    assert($payment_method instanceof PaymentMethodInterface);
+    $this->assertPaymentMethod($payment_method);
+    $order = $payment->getOrder();
+    assert($order instanceof OrderInterface);
+    $paymentIntents = $this->createPaymentIntent($order);
+    // On se rassure que le paiement a effectivement reussi.
+    if ($paymentIntents->status != PaymentIntent::STATUS_SUCCEEDED) {
+      \Stephane888\Debug\debugLog::kintDebugDrupal($paymentIntents, 'error-createPayment--', true);
+      $this->messenger()->addWarning("Votre paiement a echoue, veillez utliser une autre methode de paiement");
+      $order->set('payment_method', NULL);
+      $this->deletePaymentMethod($payment_method);
+      if (is_object($paymentIntents->last_payment_error)) {
+        $error = $paymentIntents->last_payment_error;
+        $decline_message = sprintf('%s: %s', $error->type, $error->message ?? '');
+      }
+      else {
+        $decline_message = $paymentIntents->last_payment_error;
+      }
+      throw new HardDeclineException($decline_message);
+    }
+    // \Stephane888\Debug\debugLog::kintDebugDrupal($paymentIntents,
+    // 'createPayment--', true);
+    $next_state = $capture ? 'completed' : 'authorization';
+    $payment->setState($next_state);
+    $payment->setRemoteId($paymentIntents->id);
+    $payment->save();
+    //
+    $order->unsetData('stripebyhabeuk_payment_intent_id');
+    $order->save();
+  }
+  
+  /**
+   * Permet de creer ou de mettre à jour PaymentIntent.
+   * S'assure egalement que pour une commande on a un unique paymentIntent.
+   */
+  public function createPaymentIntent(OrderInterface $order) {
+    
+    /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
+    $payment_method = $order->get('payment_method')->entity;
+    /** @var \Drupal\commerce_price\Price */
+    $amount = $order->getTotalPrice();
+    $intent_id = $order->getData('stripebyhabeuk_payment_intent_id');
+    $intent_array = [
+      'amount' => $this->minorUnitsConverter->toMinorUnits($amount),
+      'currency' => strtolower($amount->getCurrencyCode()),
+      'payment_method_types' => [
+        'card'
+      ],
+      'metadata' => [
+        'order_id' => $order->id(),
+        'store_id' => $order->getStoreId()
+      ],
+      'payment_method' => $payment_method->getRemoteId(),
+      'capture_method' => 'automatic'
+    ];
+    
+    $customer_remote_id = $this->getRemoteCustomerId($order->getCustomer());
+    if (!empty($customer_remote_id)) {
+      $intent_array['customer'] = $customer_remote_id;
+    }
+    $GateWay = new GateWay($this->getSecretKey());
+    /**
+     *
+     * @var \Stripe\StripeClient $stribeLib
+     */
+    $stribeLib = $GateWay->getInstance();
+    if (!$intent_id) {
+      // le paiement se ferra lorsque l'utilisateur va cliquer sur le bouton
+      // "paiyer la facture".
+      $intent_array['confirm'] = false;
+      $paymentIntents = $stribeLib->paymentIntents->create($intent_array);
+      $order->setData('stripebyhabeuk_payment_intent_id', $paymentIntents->id)->save();
+    }
+    else {
+      /**
+       * On verifie si l'utilisateur a deja payé ou pas.
+       */
+      $paymentIntents = $stribeLib->paymentIntents->retrieve($intent_id);
+      if ($paymentIntents->status == PaymentIntent::STATUS_SUCCEEDED) {
+        return $paymentIntents;
+      }
+      // On maj les données.
+      $paymentIntents = $stribeLib->paymentIntents->update($intent_id, $intent_array);
+    }
+    return $paymentIntents;
+  }
+  
+  /**
+   * Cette methode est executé apres la validation qui qui presente les methodes
+   * de paiements.
+   * $payment_details : represente les données fournit par le formulaire
+   * "add-payment-method".
    *
    * {@inheritdoc}
    * @see \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsCreatingPaymentMethodsInterface::createPaymentMethod()
@@ -45,23 +175,98 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
     $required_keys = [
       // The expected keys are payment gateway specific and usually match
       // the PaymentMethodAddForm form elements. They are expected to be valid.
-      'stripe_payment_method_id'
+      'stripebyhabeuk_payment_method_id'
     ];
     foreach ($required_keys as $required_key) {
       if (empty($payment_details[$required_key])) {
+        
         throw new InvalidRequestException(sprintf('$payment_details must contain the %s key.', $required_key));
       }
     }
     
-    $remote_payment_method = $this->addPaymentMethodToPaymentIntents($payment_method, $payment_details);
+    $remote_payment_method = $this->UpdatePaymentMethods($payment_method, $payment_details);
     $payment_method->card_type = $this->mapCreditCardType($remote_payment_method['brand']);
     $payment_method->card_number = $remote_payment_method['last4'];
     $payment_method->card_exp_month = $remote_payment_method['exp_month'];
     $payment_method->card_exp_year = $remote_payment_method['exp_year'];
     $expires = CreditCard::calculateExpirationTimestamp($remote_payment_method['exp_month'], $remote_payment_method['exp_year']);
-    $payment_method->setRemoteId($payment_details['stripe_payment_method_id']);
+    $payment_method->setRemoteId($payment_details['stripebyhabeuk_payment_method_id']);
     $payment_method->setExpiresTime($expires);
     $payment_method->save();
+  }
+  
+  /**
+   * Permet de completer les informations sur la methode de paiment (ajouter le
+   * client, ajouter le billing information).
+   *
+   * @param PaymentMethodInterface $payment_method
+   * @param array $payment_details
+   */
+  protected function UpdatePaymentMethods(PaymentMethodInterface $payment_method, array $payment_details) {
+    $stripe_payment_method_id = $payment_details['stripebyhabeuk_payment_method_id'];
+    $owner = $payment_method->getOwner();
+    $customer_id = NULL;
+    if ($owner && $owner->isAuthenticated()) {
+      $customer_id = $this->getRemoteCustomerId($owner);
+    }
+    try {
+      $GateWay = new GateWay($this->getSecretKey());
+      /**
+       *
+       * @var \Stripe\StripeClient $stripe
+       */
+      $stripeLib = $GateWay->getInstance();
+      $stripe_payment_method = $stripeLib->paymentMethods->retrieve($stripe_payment_method_id);
+      if ($customer_id) {
+        $stripe_payment_method->attach([
+          'customer' => $customer_id
+        ]);
+        $email = $owner->getEmail();
+      }
+      // If the user is authenticated, created a Stripe customer to attach the
+      // payment method to.
+      elseif ($owner && $owner->isAuthenticated()) {
+        $email = $owner->getEmail();
+        $customer = $stripeLib->customers->create([
+          'email' => $email,
+          'description' => $this->t('Customer for :mail', [
+            ':mail' => $email
+          ]),
+          'payment_method' => $stripe_payment_method_id
+        ]);
+        $customer_id = $customer->id;
+        $this->setRemoteCustomerId($owner, $customer_id);
+        $owner->save();
+      }
+      else {
+        $email = NULL;
+      }
+      
+      if ($customer_id && $email) {
+        $payment_method_data = [
+          'email' => $email
+        ];
+        if ($billing_profile = $payment_method->getBillingProfile()) {
+          $billing_address = $billing_profile->get('address')->first()->toArray();
+          $payment_method_data['address'] = [
+            'city' => $billing_address['locality'],
+            'country' => $billing_address['country_code'],
+            'line1' => $billing_address['address_line1'],
+            'line2' => $billing_address['address_line2'],
+            'postal_code' => $billing_address['postal_code'],
+            'state' => $billing_address['administrative_area']
+          ];
+          $payment_method_data['name'] = $billing_address['given_name'] . ' ' . $billing_address['family_name'];
+        }
+        $stripeLib->paymentMethods->update($stripe_payment_method_id, [
+          'billing_details' => $payment_method_data
+        ]);
+      }
+      return $stripe_payment_method->card;
+    }
+    catch (ApiErrorException $e) {
+      ErrorHelper::handleException($e);
+    }
   }
   
   /**
@@ -69,10 +274,11 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
    *
    * @param PaymentMethodInterface $payment_method
    * @param array $payment_details
+   * @deprecated probleme de logique.
    */
   protected function addPaymentMethodToPaymentIntents(PaymentMethodInterface $payment_method, array $payment_details) {
-    $stripe_payment_method_id = $payment_details['stripe_payment_method_id'];
-    $stripe_payment_intents_id = $payment_details['stripe_payment_intents_id'];
+    $stripe_payment_method_id = $payment_details['stripebyhabeuk_payment_method_id'];
+    $stripe_payment_intents_id = $payment_details['stripebyhabeuk_payment_method_id'];
     $GateWay = new GateWay($this->getSecretKey());
     $PaymentMethod = $GateWay->attachPaymentMethodToPaymentIntents($stripe_payment_method_id, $stripe_payment_intents_id);
     return $PaymentMethod->card;
@@ -88,26 +294,6 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
     return $operations;
   }
   
-  /**
-   * Elle se charge d'effectuer le paiement via l'API et on cree l'entite
-   * payement si le paiement a reussi ou est en attente.
-   *
-   * This method gets called during the checkout process, when the Payment
-   * Information form is submitted.It is also called when a payment is added to
-   * an order manually.
-   *
-   * {@inheritdoc}
-   * @see \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsStoredPaymentMethodsInterface::createPayment()
-   * @see https://docs.drupalcommerce.org/commerce2/developer-guide/payments/create-payment-gateway/on-site-gateways/creating-payments
-   */
-  public function createPayment(PaymentInterface $payment, $capture = TRUE) {
-    // On definie le nouveau paiement.
-    $this->assertPaymentState($payment, [
-      'new'
-    ]);
-    \Stephane888\Debug\debugLog::kintDebugDrupal($payment, "createPayment", true);
-  }
-  
   public function getPublishableKey() {
     return $this->configuration['publishable_key'];
   }
@@ -120,9 +306,6 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
   }
   
   public function capturePayment(PaymentInterface $payment, Price $amount = NULL) {
-  }
-  
-  public function createPaymentIntent(OrderInterface $order, $intent_attributes = [], PaymentInterface $payment = NULL) {
   }
   
   public function refundPayment(PaymentInterface $payment, Price $amount = NULL) {

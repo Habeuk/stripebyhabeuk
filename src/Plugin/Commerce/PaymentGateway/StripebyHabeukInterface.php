@@ -36,6 +36,6 @@ interface StripebyHabeukInterface extends OnsitePaymentGatewayInterface, Support
    *        
    * @return \Stripe\PaymentIntent The payment intent.
    */
-  public function createPaymentIntent(OrderInterface $order, $intent_attributes = [], PaymentInterface $payment = NULL);
+  public function createPaymentIntent(OrderInterface $order);
   
 }

@@ -3,10 +3,10 @@
 namespace Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway;
 
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_payment\Entity\PaymentInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OnsitePaymentGatewayInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsAuthorizationsInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsRefundsInterface;
+use Drupal\commerce_price\Price;
 
 /**
  * Provides the interface for the Stripe payment gateway.
@@ -37,5 +37,14 @@ interface StripebyHabeukInterface extends OnsitePaymentGatewayInterface, Support
    * @return \Stripe\PaymentIntent The payment intent.
    */
   public function createPaymentIntent(OrderInterface $order);
+  
+  /**
+   * Retoune le montant qui doit etre payer.
+   *
+   * @param Price $montant
+   * @param OrderInterface $order
+   * @return integer
+   */
+  public function acompte(Price $amount, OrderInterface $order);
   
 }

@@ -22,8 +22,8 @@ use Stripe\PaymentIntent;
  *
  * @CommercePaymentGateway(
  *   id = "stripebyhabeuk_static_onsite",
- *   label = @Translation("stripe by habeuk static Onsite"),
- *   display_label = @Translation("stripe by habeuk static"),
+ *   label = @Translation("stripe by habeuk"),
+ *   display_label = @Translation("stripe by habeuk"),
  *    forms = {
  *     "add-payment-method" = "Drupal\stripebyhabeuk\PluginForm\StripebyhabeukStaticOnSiteCheckoutForm",
  *   },
@@ -104,6 +104,8 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
     //
     $order->unsetData('stripebyhabeuk_payment_intent_id');
     $order->save();
+    // return $paymentIntents, help order module that extend this module.
+    return $paymentIntents;
   }
   
   /**
@@ -111,14 +113,13 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
    * S'assure egalement que pour une commande on a un unique paymentIntent.
    */
   public function createPaymentIntent(OrderInterface $order) {
-    
     /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
     $payment_method = $order->get('payment_method')->entity;
     /** @var \Drupal\commerce_price\Price */
     $amount = $order->getTotalPrice();
     $intent_id = $order->getData('stripebyhabeuk_payment_intent_id');
     $intent_array = [
-      'amount' => $this->minorUnitsConverter->toMinorUnits($amount),
+      'amount' => $this->acompte($amount, $order),
       'currency' => strtolower($amount->getCurrencyCode()),
       'payment_method_types' => [
         'card'
@@ -160,6 +161,15 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
       $paymentIntents = $stribeLib->paymentIntents->update($intent_id, $intent_array);
     }
     return $paymentIntents;
+  }
+  
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyHabeukInterface::acompte()
+   */
+  public function acompte(Price $amount, OrderInterface $order) {
+    return $this->toMinorUnits($amount);
   }
   
   /**

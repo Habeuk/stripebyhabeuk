@@ -48,7 +48,6 @@ class StripeAcompte extends StripebyhabeukStaticOnSite {
   public function createPayment(PaymentInterface $payment, $capture = TRUE) {
     $paymentIntents = parent::createPayment($payment, $capture);
     $order = $payment->getOrder();
-    $intent_id = $order->getData('stripebyhabeuk_payment_intent_id');
     $GateWay = new GateWay($this->getSecretKey());
     /**
      *
@@ -59,7 +58,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite {
       'stripebyhabeuk_acompte_price_paid' => $order->getData('stripebyhabeuk_acompte_price_paid'),
       'stripebyhabeuk_acompte_price_remainder' => $order->getData('stripebyhabeuk_acompte_price_remainder')
     ] + $paymentIntents->metadata->toArray();
-    $stribeLib->paymentIntents->update($intent_id, [
+    $stribeLib->paymentIntents->update($paymentIntents->id, [
       'metadata' => $metadatas
     ]);
     //

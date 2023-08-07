@@ -61,6 +61,10 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
     ] + parent::defaultConfiguration();
   }
   
+  public function getDisplayLabel() {
+    return " Payer  " . $this->getPercentValue() . "%  maintenant et le reste plus tard ";
+  }
+  
   /**
    * une fois le paiement validé, on cree l'entité pour sauvegarder l'id du
    * paiementIntent.
@@ -225,7 +229,6 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
-    
     $form['percent_value'] = [
       '#type' => 'number',
       '#title' => $this->t('percent_value ') . " %",

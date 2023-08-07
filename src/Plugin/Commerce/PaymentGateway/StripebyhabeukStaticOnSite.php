@@ -378,7 +378,7 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
-    
+    $form['display_label']['#access'] = TRUE;
     $form['publishable_key'] = [
       '#type' => 'textfield',
       '#title' => $this->t('publishable key'),

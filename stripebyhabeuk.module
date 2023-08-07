@@ -31,5 +31,24 @@ function stripebyhabeuk_commerce_checkout_pane_info_alter(&$definitions) {
   }
 }
 
+/**
+ * implement hook_ENTITY_TYPE_load
+ */
+function stripebyhabeuk_commerce_payment_gateway_load($entities) {
+  foreach ($entities as $entity) {
+    /**
+     *
+     * @var \Drupal\commerce_payment\Entity\PaymentGateway $entity
+     */
+    /**
+     * Permet de modifier le display name pour les commerce_payment_gateway
+     * utilisant le plugin stripebyhabeuk_acompte.
+     */
+    if ($entity->getPluginId() == "stripebyhabeuk_acompte") {
+      \Drupal::messenger()->addStatus('label : ' . $entity->label());
+    }
+  }
+}
+
 
 

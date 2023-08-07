@@ -61,7 +61,12 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
         if ($StripeAcompte->AcompteApplyOnSubtotal()) {
           $buildExplication = [
             '#type' => 'html_tag',
-            '#tag' => 'div',
+            '#tag' => 'small',
+            '#attributes' => [
+              'class' => [
+                'font-italic'
+              ]
+            ],
             '#value' => 'Payer ' . $StripeAcompte->getSubToatlaAmount($order)->getNumber() . '' . $StripeAcompte->getCurrencySymbol($order) . ' sur ' . $order->getSubtotalPrice()->getNumber() . '' . $StripeAcompte->getCurrencySymbol($order)
           ];
         }

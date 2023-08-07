@@ -88,10 +88,22 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
     $stribeLib->paymentIntents->update($paymentIntents->id, [
       'metadata' => $metadatas
     ]);
-    //
+    // il faut modifier le status du paiement, car il n'est pas complet.
+    // $next_state = $capture ? 'completed' : 'authorization';
+    // $payment->setState($next_state);
+    // en attendant de bien comprendre d'avance l'ecommerce, on le fait via une
+    // entite custom.
+    $this->storeProcessPeriodiquePaiement($order, $payment, $paymentIntents);
     $order->unsetData('stripebyhabeuk_acompte_price_paid');
     $order->unsetData('stripebyhabeuk_acompte_price_remainder');
     $order->save();
+    //
+  }
+  
+  /**
+   * Permet de payer plus tard le reste de la commande.
+   */
+  protected function storeProcessPeriodiquePaiement(OrderInterface $order, PaymentInterface $payment) {
   }
   
   public function AcompteApplyOnSubtotal() {
@@ -154,7 +166,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
   
   /**
    *
-   * {@inheritdoc}
+   * {@inheritdoc} amount
    * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::amount()
    */
   public function amount(Price $amount, OrderInterface $order) {

@@ -7,11 +7,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form controller for Payment intents edit forms.
+ * Form controller for Reliquat to paid edit forms.
  *
  * @ingroup stripebyhabeuk
  */
-class paymentIntentsForm extends ContentEntityForm {
+class ReliquatToPaidForm extends ContentEntityForm {
 
   /**
    * The current user account.
@@ -34,7 +34,7 @@ class paymentIntentsForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    /* @var \Drupal\stripebyhabeuk\Entity\paymentIntents $entity */
+    /* @var \Drupal\stripebyhabeuk\Entity\ReliquatToPaid $entity */
     $form = parent::buildForm($form, $form_state);
 
     return $form;
@@ -50,17 +50,17 @@ class paymentIntentsForm extends ContentEntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger()->addMessage($this->t('Created the %label Payment intents.', [
+        $this->messenger()->addMessage($this->t('Created the %label Reliquat to paid.', [
           '%label' => $entity->label(),
         ]));
         break;
 
       default:
-        $this->messenger()->addMessage($this->t('Saved the %label Payment intents.', [
+        $this->messenger()->addMessage($this->t('Saved the %label Reliquat to paid.', [
           '%label' => $entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.payment_intents.canonical', ['payment_intents' => $entity->id()]);
+    $form_state->setRedirect('entity.reliquat_to_paid.canonical', ['reliquat_to_paid' => $entity->id()]);
   }
 
 }

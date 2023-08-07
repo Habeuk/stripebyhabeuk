@@ -9,56 +9,56 @@ use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
- * Provides an interface for defining Payment intents entities.
+ * Provides an interface for defining Reliquat to paid entities.
  *
  * @ingroup stripebyhabeuk
  */
-interface paymentIntentsInterface extends ContentEntityInterface, RevisionLogInterface, EntityChangedInterface, EntityPublishedInterface, EntityOwnerInterface {
+interface ReliquatToPaidInterface extends ContentEntityInterface, RevisionLogInterface, EntityChangedInterface, EntityPublishedInterface, EntityOwnerInterface {
 
   /**
    * Add get/set methods for your configuration properties here.
    */
 
   /**
-   * Gets the Payment intents name.
+   * Gets the Reliquat to paid name.
    *
    * @return string
-   *   Name of the Payment intents.
+   *   Name of the Reliquat to paid.
    */
   public function getName();
 
   /**
-   * Sets the Payment intents name.
+   * Sets the Reliquat to paid name.
    *
    * @param string $name
-   *   The Payment intents name.
+   *   The Reliquat to paid name.
    *
-   * @return \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
-   *   The called Payment intents entity.
+   * @return \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
+   *   The called Reliquat to paid entity.
    */
   public function setName($name);
 
   /**
-   * Gets the Payment intents creation timestamp.
+   * Gets the Reliquat to paid creation timestamp.
    *
    * @return int
-   *   Creation timestamp of the Payment intents.
+   *   Creation timestamp of the Reliquat to paid.
    */
   public function getCreatedTime();
 
   /**
-   * Sets the Payment intents creation timestamp.
+   * Sets the Reliquat to paid creation timestamp.
    *
    * @param int $timestamp
-   *   The Payment intents creation timestamp.
+   *   The Reliquat to paid creation timestamp.
    *
-   * @return \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
-   *   The called Payment intents entity.
+   * @return \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
+   *   The called Reliquat to paid entity.
    */
   public function setCreatedTime($timestamp);
 
   /**
-   * Gets the Payment intents revision creation timestamp.
+   * Gets the Reliquat to paid revision creation timestamp.
    *
    * @return int
    *   The UNIX timestamp of when this revision was created.
@@ -66,18 +66,18 @@ interface paymentIntentsInterface extends ContentEntityInterface, RevisionLogInt
   public function getRevisionCreationTime();
 
   /**
-   * Sets the Payment intents revision creation timestamp.
+   * Sets the Reliquat to paid revision creation timestamp.
    *
    * @param int $timestamp
    *   The UNIX timestamp of when this revision was created.
    *
-   * @return \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
-   *   The called Payment intents entity.
+   * @return \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
+   *   The called Reliquat to paid entity.
    */
   public function setRevisionCreationTime($timestamp);
 
   /**
-   * Gets the Payment intents revision author.
+   * Gets the Reliquat to paid revision author.
    *
    * @return \Drupal\user\UserInterface
    *   The user entity for the revision author.
@@ -85,13 +85,13 @@ interface paymentIntentsInterface extends ContentEntityInterface, RevisionLogInt
   public function getRevisionUser();
 
   /**
-   * Sets the Payment intents revision author.
+   * Sets the Reliquat to paid revision author.
    *
    * @param int $uid
    *   The user ID of the revision author.
    *
-   * @return \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
-   *   The called Payment intents entity.
+   * @return \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
+   *   The called Reliquat to paid entity.
    */
   public function setRevisionUserId($uid);
 

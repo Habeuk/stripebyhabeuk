@@ -5,9 +5,9 @@ namespace Drupal\stripebyhabeuk\Entity;
 use Drupal\views\EntityViewsData;
 
 /**
- * Provides Views data for Payment intents entities.
+ * Provides Views data for Reliquat to paid entities.
  */
-class paymentIntentsViewsData extends EntityViewsData {
+class ReliquatToPaidViewsData extends EntityViewsData {
 
   /**
    * {@inheritdoc}

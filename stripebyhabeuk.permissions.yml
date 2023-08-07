@@ -29,3 +29,34 @@ delete all payment intents revisions:
   title: 'Delete all revisions'
   description: 'Role requires permission to <em>view Payment intents revisions</em> and <em>delete rights</em> for payment intents entities in question or <em>administer payment intents entities</em>.'
 
+add reliquat to paid entities:
+  title: 'Create new Reliquat to paid entities'
+
+administer reliquat to paid entities:
+  title: 'Administer Reliquat to paid entities'
+  description: 'Allow to access the administration form to configure Reliquat to paid entities.'
+  restrict access: true
+
+delete reliquat to paid entities:
+  title: 'Delete Reliquat to paid entities'
+
+edit reliquat to paid entities:
+  title: 'Edit Reliquat to paid entities'
+
+view published reliquat to paid entities:
+  title: 'View published Reliquat to paid entities'
+
+view unpublished reliquat to paid entities:
+  title: 'View unpublished Reliquat to paid entities'
+
+view all reliquat to paid revisions:
+  title: 'View all Reliquat to paid revisions'
+
+revert all reliquat to paid revisions:
+  title: 'Revert all Reliquat to paid revisions'
+  description: 'Role requires permission <em>view Reliquat to paid revisions</em> and <em>edit rights</em> for reliquat to paid entities in question or <em>administer reliquat to paid entities</em>.'
+
+delete all reliquat to paid revisions:
+  title: 'Delete all revisions'
+  description: 'Role requires permission to <em>view Reliquat to paid revisions</em> and <em>delete rights</em> for reliquat to paid entities in question or <em>administer reliquat to paid entities</em>.'
+

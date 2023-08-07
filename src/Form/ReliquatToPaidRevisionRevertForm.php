@@ -5,29 +5,29 @@ namespace Drupal\stripebyhabeuk\Form;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\stripebyhabeuk\Entity\paymentIntentsInterface;
+use Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a form for reverting a Payment intents revision.
+ * Provides a form for reverting a Reliquat to paid revision.
  *
  * @ingroup stripebyhabeuk
  */
-class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
+class ReliquatToPaidRevisionRevertForm extends ConfirmFormBase {
 
   /**
-   * The Payment intents revision.
+   * The Reliquat to paid revision.
    *
-   * @var \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
+   * @var \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
    */
   protected $revision;
 
   /**
-   * The Payment intents storage.
+   * The Reliquat to paid storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $paymentIntentsStorage;
+  protected $reliquatToPaidStorage;
 
   /**
    * The date formatter service.
@@ -48,7 +48,7 @@ class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-    $instance->paymentIntentsStorage = $container->get('entity_type.manager')->getStorage('payment_intents');
+    $instance->reliquatToPaidStorage = $container->get('entity_type.manager')->getStorage('reliquat_to_paid');
     $instance->dateFormatter = $container->get('date.formatter');
     $instance->time = $container->get('datetime.time');
     return $instance;
@@ -58,7 +58,7 @@ class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'payment_intents_revision_revert_confirm';
+    return 'reliquat_to_paid_revision_revert_confirm';
   }
 
   /**
@@ -74,7 +74,7 @@ class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.payment_intents.version_history', ['payment_intents' => $this->revision->id()]);
+    return new Url('entity.reliquat_to_paid.version_history', ['reliquat_to_paid' => $this->revision->id()]);
   }
 
   /**
@@ -94,8 +94,8 @@ class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $payment_intents_revision = NULL) {
-    $this->revision = $this->paymentIntentsStorage->loadRevision($payment_intents_revision);
+  public function buildForm(array $form, FormStateInterface $form_state, $reliquat_to_paid_revision = NULL) {
+    $this->revision = $this->ReliquatToPaidStorage->loadRevision($reliquat_to_paid_revision);
     $form = parent::buildForm($form, $form_state);
 
     return $form;
@@ -115,26 +115,26 @@ class paymentIntentsRevisionRevertForm extends ConfirmFormBase {
     ]);
     $this->revision->save();
 
-    $this->logger('content')->notice('Payment intents: reverted %title revision %revision.', ['%title' => $this->revision->label(), '%revision' => $this->revision->getRevisionId()]);
-    $this->messenger()->addMessage(t('Payment intents %title has been reverted to the revision from %revision-date.', ['%title' => $this->revision->label(), '%revision-date' => $this->dateFormatter->format($original_revision_timestamp)]));
+    $this->logger('content')->notice('Reliquat to paid: reverted %title revision %revision.', ['%title' => $this->revision->label(), '%revision' => $this->revision->getRevisionId()]);
+    $this->messenger()->addMessage(t('Reliquat to paid %title has been reverted to the revision from %revision-date.', ['%title' => $this->revision->label(), '%revision-date' => $this->dateFormatter->format($original_revision_timestamp)]));
     $form_state->setRedirect(
-      'entity.payment_intents.version_history',
-      ['payment_intents' => $this->revision->id()]
+      'entity.reliquat_to_paid.version_history',
+      ['reliquat_to_paid' => $this->revision->id()]
     );
   }
 
   /**
    * Prepares a revision to be reverted.
    *
-   * @param \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface $revision
+   * @param \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface $revision
    *   The revision to be reverted.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    *
-   * @return \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
+   * @return \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
    *   The prepared revision ready to be stored.
    */
-  protected function prepareRevertedRevision(paymentIntentsInterface $revision, FormStateInterface $form_state) {
+  protected function prepareRevertedRevision(ReliquatToPaidInterface $revision, FormStateInterface $form_state) {
     $revision->setNewRevision();
     $revision->isDefaultRevision(TRUE);
     $revision->setRevisionCreationTime($this->time->getRequestTime());

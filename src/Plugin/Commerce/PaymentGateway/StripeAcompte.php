@@ -8,6 +8,8 @@ use Drupal\commerce_payment\Entity\PaymentInterface;
 use Habeuk\Stripe\GateWay;
 use Drupal\Core\Form\FormStateInterface;
 use Google\Service\ShoppingContent\Amount;
+use Stripe\Service\PaymentIntentService;
+use Drupal\stripebyhabeuk\Entity\ReliquatToPaid;
 
 /**
  * Provides the example for payement on commece_stripe.
@@ -93,7 +95,8 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
     // $payment->setState($next_state);
     // en attendant de bien comprendre d'avance l'ecommerce, on le fait via une
     // entite custom.
-    $this->storeProcessPeriodiquePaiement($order, $payment, $paymentIntents);
+    $this->storeProcessPeriodiquePaiement($order, $payment);
+    //
     $order->unsetData('stripebyhabeuk_acompte_price_paid');
     $order->unsetData('stripebyhabeuk_acompte_price_remainder');
     $order->save();
@@ -104,6 +107,13 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
    * Permet de payer plus tard le reste de la commande.
    */
   protected function storeProcessPeriodiquePaiement(OrderInterface $order, PaymentInterface $payment) {
+    $values = [
+      'amount_paid' => $this->getAcompteAmount($order),
+      'commerce_order' => $order->id(),
+      'name' => $order->label()
+    ];
+    $EntityReliquatToPaid = ReliquatToPaid::create($values);
+    $EntityReliquatToPaid->save();
   }
   
   public function AcompteApplyOnSubtotal() {

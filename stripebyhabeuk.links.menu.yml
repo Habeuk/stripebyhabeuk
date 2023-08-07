@@ -5,16 +5,16 @@ stripebyhabeuk.settings_form:
   route_name: stripebyhabeuk.settings_form
   weight: 10
 
-# Payment intents menu items definition
-entity.payment_intents.collection:
-  title: 'Payment intents list'
-  route_name: entity.payment_intents.collection
-  description: 'List Payment intents entities'
+# Reliquat to paid menu items definition
+entity.reliquat_to_paid.collection:
+  title: 'Reliquat to paid list'
+  route_name: entity.reliquat_to_paid.collection
+  description: 'List Reliquat to paid entities'
   parent: system.admin_structure
   weight: 100
 
-payment_intents.admin.structure.settings:
-  title: 'Payment intents settings'
-  description: 'Configure Payment intents entities'
-  route_name: payment_intents.settings
+reliquat_to_paid.admin.structure.settings:
+  title: 'Reliquat to paid settings'
+  description: 'Configure Reliquat to paid entities'
+  route_name: reliquat_to_paid.settings
   parent: system.admin_structure

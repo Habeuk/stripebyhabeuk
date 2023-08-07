@@ -74,26 +74,6 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
     return $element;
   }
   
-  protected function getPaymentIndent($order_id) {
-    $datas = $this->entityTypeManager->getStorage('payment_intents')->loadByProperties([
-      'commerce_order' => $order_id
-    ]);
-    if ($datas) {
-      /**
-       *
-       * @var \Drupal\stripebyhabeuk\Entity\paymentIntents $payment_intents
-       */
-      $payment_intents = reset($datas);
-      return $payment_intents->getStripePaymentIntentsId();
-    }
-    return null;
-  }
-  
-  protected function setPaymentIndent(array $values) {
-    $payment_intents = $this->entityTypeManager->getStorage('payment_intents')->create($values);
-    $payment_intents->save();
-  }
-  
   /**
    * Validates the credit card form.
    * Une partie de la validation doit etre effectuer par stripe.js, mais on va

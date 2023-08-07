@@ -6,11 +6,11 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Class paymentIntentsSettingsForm.
+ * Class ReliquatToPaidSettingsForm.
  *
  * @ingroup stripebyhabeuk
  */
-class paymentIntentsSettingsForm extends FormBase {
+class ReliquatToPaidSettingsForm extends FormBase {
 
   /**
    * Returns a unique string identifying the form.
@@ -19,7 +19,7 @@ class paymentIntentsSettingsForm extends FormBase {
    *   The unique string identifying the form.
    */
   public function getFormId() {
-    return 'paymentintents_settings';
+    return 'reliquattopaid_settings';
   }
 
   /**
@@ -35,7 +35,7 @@ class paymentIntentsSettingsForm extends FormBase {
   }
 
   /**
-   * Defines the settings form for Payment intents entities.
+   * Defines the settings form for Reliquat to paid entities.
    *
    * @param array $form
    *   An associative array containing the structure of the form.
@@ -46,7 +46,7 @@ class paymentIntentsSettingsForm extends FormBase {
    *   Form definition array.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['paymentintents_settings']['#markup'] = 'Settings form for Payment intents entities. Manage field settings here.';
+    $form['reliquattopaid_settings']['#markup'] = 'Settings form for Reliquat to paid entities. Manage field settings here.';
     return $form;
   }
 

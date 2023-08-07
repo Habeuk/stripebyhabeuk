@@ -317,21 +317,6 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
   }
   
   /**
-   * Attach la methode payment à l'intention de payment.
-   *
-   * @param PaymentMethodInterface $payment_method
-   * @param array $payment_details
-   * @deprecated probleme de logique.
-   */
-  protected function addPaymentMethodToPaymentIntents(PaymentMethodInterface $payment_method, array $payment_details) {
-    $stripe_payment_method_id = $payment_details['stripebyhabeuk_payment_method_id'];
-    $stripe_payment_intents_id = $payment_details['stripebyhabeuk_payment_method_id'];
-    $GateWay = new GateWay($this->getSecretKey());
-    $PaymentMethod = $GateWay->attachPaymentMethodToPaymentIntents($stripe_payment_method_id, $stripe_payment_intents_id);
-    return $PaymentMethod->card;
-  }
-  
-  /**
    *
    * {@inheritdoc}
    * @see \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\PaymentGatewayBase::buildPaymentOperations()

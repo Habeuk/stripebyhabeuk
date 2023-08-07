@@ -8,11 +8,11 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a form for deleting a Payment intents revision.
+ * Provides a form for deleting a Reliquat to paid revision.
  *
  * @ingroup stripebyhabeuk
  */
-class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
+class ReliquatToPaidRevisionDeleteForm extends ConfirmFormBase {
 
 
   /**
@@ -23,18 +23,18 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
   protected $dateFormatter;
 
   /**
-   * The Payment intents revision.
+   * The Reliquat to paid revision.
    *
-   * @var \Drupal\stripebyhabeuk\Entity\paymentIntentsInterface
+   * @var \Drupal\stripebyhabeuk\Entity\ReliquatToPaidInterface
    */
   protected $revision;
 
   /**
-   * The Payment intents storage.
+   * The Reliquat to paid storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $paymentIntentsStorage;
+  protected $reliquatToPaidStorage;
 
   /**
    * The database connection.
@@ -49,7 +49,7 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->dateFormatter = $container->get('date.formatter');
-    $instance->paymentIntentsStorage = $container->get('entity_type.manager')->getStorage('payment_intents');
+    $instance->reliquatToPaidStorage = $container->get('entity_type.manager')->getStorage('reliquat_to_paid');
     $instance->connection = $container->get('database');
     return $instance;
   }
@@ -58,7 +58,7 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'payment_intents_revision_delete_confirm';
+    return 'reliquat_to_paid_revision_delete_confirm';
   }
 
   /**
@@ -74,7 +74,7 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.payment_intents.version_history', ['payment_intents' => $this->revision->id()]);
+    return new Url('entity.reliquat_to_paid.version_history', ['reliquat_to_paid' => $this->revision->id()]);
   }
 
   /**
@@ -87,8 +87,8 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $payment_intents_revision = NULL) {
-    $this->revision = $this->paymentIntentsStorage->loadRevision($payment_intents_revision);
+  public function buildForm(array $form, FormStateInterface $form_state, $reliquat_to_paid_revision = NULL) {
+    $this->revision = $this->ReliquatToPaidStorage->loadRevision($reliquat_to_paid_revision);
     $form = parent::buildForm($form, $form_state);
 
     return $form;
@@ -98,18 +98,18 @@ class paymentIntentsRevisionDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->paymentIntentsStorage->deleteRevision($this->revision->getRevisionId());
+    $this->ReliquatToPaidStorage->deleteRevision($this->revision->getRevisionId());
 
-    $this->logger('content')->notice('Payment intents: deleted %title revision %revision.', ['%title' => $this->revision->label(), '%revision' => $this->revision->getRevisionId()]);
-    $this->messenger()->addMessage(t('Revision from %revision-date of Payment intents %title has been deleted.', ['%revision-date' => $this->dateFormatter->format($this->revision->getRevisionCreationTime()), '%title' => $this->revision->label()]));
+    $this->logger('content')->notice('Reliquat to paid: deleted %title revision %revision.', ['%title' => $this->revision->label(), '%revision' => $this->revision->getRevisionId()]);
+    $this->messenger()->addMessage(t('Revision from %revision-date of Reliquat to paid %title has been deleted.', ['%revision-date' => $this->dateFormatter->format($this->revision->getRevisionCreationTime()), '%title' => $this->revision->label()]));
     $form_state->setRedirect(
-      'entity.payment_intents.canonical',
-       ['payment_intents' => $this->revision->id()]
+      'entity.reliquat_to_paid.canonical',
+       ['reliquat_to_paid' => $this->revision->id()]
     );
-    if ($this->connection->query('SELECT COUNT(DISTINCT vid) FROM {payment_intents_field_revision} WHERE id = :id', [':id' => $this->revision->id()])->fetchField() > 1) {
+    if ($this->connection->query('SELECT COUNT(DISTINCT vid) FROM {reliquat_to_paid_field_revision} WHERE id = :id', [':id' => $this->revision->id()])->fetchField() > 1) {
       $form_state->setRedirect(
-        'entity.payment_intents.version_history',
-         ['payment_intents' => $this->revision->id()]
+        'entity.reliquat_to_paid.version_history',
+         ['reliquat_to_paid' => $this->revision->id()]
       );
     }
   }

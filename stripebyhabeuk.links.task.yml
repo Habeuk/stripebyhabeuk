@@ -1,26 +1,26 @@
-# Payment intents routing definition
-payment_intents.settings_tab:
-  route_name: payment_intents.settings
+# Reliquat to paid routing definition
+reliquat_to_paid.settings_tab:
+  route_name: reliquat_to_paid.settings
   title: 'Settings'
-  base_route: payment_intents.settings
+  base_route: reliquat_to_paid.settings
 
-entity.payment_intents.canonical:
-  route_name: entity.payment_intents.canonical
-  base_route: entity.payment_intents.canonical
+entity.reliquat_to_paid.canonical:
+  route_name: entity.reliquat_to_paid.canonical
+  base_route: entity.reliquat_to_paid.canonical
   title: 'View'
 
-entity.payment_intents.edit_form:
-  route_name: entity.payment_intents.edit_form
-  base_route: entity.payment_intents.canonical
+entity.reliquat_to_paid.edit_form:
+  route_name: entity.reliquat_to_paid.edit_form
+  base_route: entity.reliquat_to_paid.canonical
   title: 'Edit'
 
-entity.payment_intents.version_history:
-  route_name: entity.payment_intents.version_history
-  base_route: entity.payment_intents.canonical
+entity.reliquat_to_paid.version_history:
+  route_name: entity.reliquat_to_paid.version_history
+  base_route: entity.reliquat_to_paid.canonical
   title: 'Revisions'
 
-entity.payment_intents.delete_form:
-  route_name:  entity.payment_intents.delete_form
-  base_route:  entity.payment_intents.canonical
+entity.reliquat_to_paid.delete_form:
+  route_name:  entity.reliquat_to_paid.delete_form
+  base_route:  entity.reliquat_to_paid.canonical
   title: Delete
   weight: 10

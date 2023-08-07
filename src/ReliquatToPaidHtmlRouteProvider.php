@@ -7,12 +7,12 @@ use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Symfony\Component\Routing\Route;
 
 /**
- * Provides routes for Payment intents entities.
+ * Provides routes for Reliquat to paid entities.
  *
  * @see \Drupal\Core\Entity\Routing\AdminHtmlRouteProvider
  * @see \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
  */
-class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
+class ReliquatToPaidHtmlRouteProvider extends AdminHtmlRouteProvider {
 
   /**
    * {@inheritdoc}
@@ -38,6 +38,10 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $collection->add("entity.{$entity_type_id}.revision_delete", $delete_route);
     }
 
+    if ($translation_route = $this->getRevisionTranslationRevertRoute($entity_type)) {
+      $collection->add("entity.{$entity_type_id}.translation_revert", $translation_route);
+    }
+
     if ($settings_form_route = $this->getSettingsFormRoute($entity_type)) {
       $collection->add("$entity_type_id.settings", $settings_form_route);
     }
@@ -60,9 +64,9 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route
         ->setDefaults([
           '_title' => "{$entity_type->getLabel()} revisions",
-          '_controller' => '\Drupal\stripebyhabeuk\Controller\paymentIntentsController::revisionOverview',
+          '_controller' => '\Drupal\stripebyhabeuk\Controller\ReliquatToPaidController::revisionOverview',
         ])
-        ->setRequirement('_permission', 'view all payment intents revisions')
+        ->setRequirement('_permission', 'view all reliquat to paid revisions')
         ->setOption('_admin_route', TRUE);
 
       return $route;
@@ -83,10 +87,10 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route = new Route($entity_type->getLinkTemplate('revision'));
       $route
         ->setDefaults([
-          '_controller' => '\Drupal\stripebyhabeuk\Controller\paymentIntentsController::revisionShow',
-          '_title_callback' => '\Drupal\stripebyhabeuk\Controller\paymentIntentsController::revisionPageTitle',
+          '_controller' => '\Drupal\stripebyhabeuk\Controller\ReliquatToPaidController::revisionShow',
+          '_title_callback' => '\Drupal\stripebyhabeuk\Controller\ReliquatToPaidController::revisionPageTitle',
         ])
-        ->setRequirement('_permission', 'view all payment intents revisions')
+        ->setRequirement('_permission', 'view all reliquat to paid revisions')
         ->setOption('_admin_route', TRUE);
 
       return $route;
@@ -107,10 +111,10 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route = new Route($entity_type->getLinkTemplate('revision_revert'));
       $route
         ->setDefaults([
-          '_form' => '\Drupal\stripebyhabeuk\Form\paymentIntentsRevisionRevertForm',
+          '_form' => '\Drupal\stripebyhabeuk\Form\ReliquatToPaidRevisionRevertForm',
           '_title' => 'Revert to earlier revision',
         ])
-        ->setRequirement('_permission', 'revert all payment intents revisions')
+        ->setRequirement('_permission', 'revert all reliquat to paid revisions')
         ->setOption('_admin_route', TRUE);
 
       return $route;
@@ -131,10 +135,34 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route = new Route($entity_type->getLinkTemplate('revision_delete'));
       $route
         ->setDefaults([
-          '_form' => '\Drupal\stripebyhabeuk\Form\paymentIntentsRevisionDeleteForm',
+          '_form' => '\Drupal\stripebyhabeuk\Form\ReliquatToPaidRevisionDeleteForm',
           '_title' => 'Delete earlier revision',
         ])
-        ->setRequirement('_permission', 'delete all payment intents revisions')
+        ->setRequirement('_permission', 'delete all reliquat to paid revisions')
+        ->setOption('_admin_route', TRUE);
+
+      return $route;
+    }
+  }
+
+  /**
+   * Gets the revision translation revert route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getRevisionTranslationRevertRoute(EntityTypeInterface $entity_type) {
+    if ($entity_type->hasLinkTemplate('translation_revert')) {
+      $route = new Route($entity_type->getLinkTemplate('translation_revert'));
+      $route
+        ->setDefaults([
+          '_form' => '\Drupal\stripebyhabeuk\Form\ReliquatToPaidRevisionRevertTranslationForm',
+          '_title' => 'Revert to earlier revision of a translation',
+        ])
+        ->setRequirement('_permission', 'revert all reliquat to paid revisions')
         ->setOption('_admin_route', TRUE);
 
       return $route;
@@ -155,7 +183,7 @@ class paymentIntentsHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route = new Route("/admin/structure/{$entity_type->id()}/settings");
       $route
         ->setDefaults([
-          '_form' => 'Drupal\stripebyhabeuk\Form\paymentIntentsSettingsForm',
+          '_form' => 'Drupal\stripebyhabeuk\Form\ReliquatToPaidSettingsForm',
           '_title' => "{$entity_type->getLabel()} settings",
         ])
         ->setRequirement('_permission', $entity_type->getAdminPermission())

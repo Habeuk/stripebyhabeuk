@@ -1,0 +1,6 @@
+accompte:
+  label: 'Accompte'
+  singular_label: 'accompte'
+  plural_label: 'accompte'
+  has_ui: true
+  weight: -15

@@ -40,9 +40,14 @@ class StripebyhabeukReview extends CheckoutPaneBase {
     if (!empty($form_state->getValues()) || !empty($form_state->getUserInput())) {
       return $pane_form;
     }
-    $this->messenger()->addMessage("Load js for confirmation", true);
+    // $this->messenger()->addMessage("Load js for confirmation", true);
     /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite $stripe_plugin */
     $stripe_plugin = $this->order->get('payment_gateway')->entity->getPlugin();
+    /**
+     * On se rassure que le plugin provient de 'stripebyhabeuk_static_onsite';
+     */
+    if ($stripe_plugin->getBaseId() !== 'stripebyhabeuk_static_onsite')
+      return $pane_form;
     $PaymentIntent = $stripe_plugin->createPaymentIntent($this->order);
     $idHtml = !empty($pane_form['#id']) ? $pane_form['#id'] : Html::getUniqueId('cart-ifs-' . rand(100, 999));
     $pane_form['#attributes']['class'][] = 'kksd5764sdsedzsds';

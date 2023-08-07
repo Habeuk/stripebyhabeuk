@@ -7,6 +7,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentInterface;
 use Habeuk\Stripe\GateWay;
 use Drupal\Core\Form\FormStateInterface;
+use Google\Service\ShoppingContent\Amount;
 
 /**
  * Provides the example for payement on commece_stripe.
@@ -24,7 +25,28 @@ use Drupal\Core\Form\FormStateInterface;
  *   },
  * )
  */
-class StripeAcompte extends StripebyhabeukStaticOnSite {
+class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeukAcompteInterface {
+  /**
+   * Permet de mettre en cache la valeur de l'acompte aucours d'un cycle.
+   *
+   * @var number
+   */
+  protected $UnitsAcompteAmount = NULL;
+  
+  /**
+   * Permet de mettre en cache la valeur qui va etre payer par rapport au
+   * montant du sous total.
+   *
+   * @var number
+   */
+  protected $UnitsSubtotalAmount = NULL;
+  
+  /**
+   * Permet de mettre en cache la valeur du montant restant aucours d'un cycle.
+   *
+   * @var number
+   */
+  protected $UnitsBalanceAmount = NULL;
   
   /**
    *
@@ -34,7 +56,8 @@ class StripeAcompte extends StripebyhabeukStaticOnSite {
   public function defaultConfiguration() {
     return [
       'min_value_paid' => 3,
-      'percent_value' => 10
+      'percent_value' => 10,
+      'apply_on_subtotal' => true
     ] + parent::defaultConfiguration();
   }
   
@@ -67,35 +90,76 @@ class StripeAcompte extends StripebyhabeukStaticOnSite {
     $order->save();
   }
   
+  public function AcompteApplyOnSubtotal() {
+    if ($this->configuration['apply_on_subtotal'])
+      return true;
+    return false;
+  }
+  
   /**
    *
    * {@inheritdoc}
    * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::acompte()
+   * @return number
    */
-  public function acompte(Price $amount, OrderInterface $order) {
-    $price = $this->toMinorUnits($amount);
-    $min_value_paid = $this->getMinValuePaid();
-    $percent_value = $this->getPercentValue();
-    $price_reduce = 0;
-    if ($min_value_paid >= 1) {
-      $pm = new Price($min_value_paid, $amount->getCurrencyCode());
-      $price_reduce = $this->toMinorUnits($pm);
-    }
-    if ($percent_value >= 1) {
-      $reduce_percent = \ceil($price * $percent_value / 100);
-      if ($reduce_percent > $price_reduce) {
-        $price_reduce = $reduce_percent;
+  public function acompte(OrderInterface $order) {
+    if ($this->UnitsAcompteAmount === NULL) {
+      if ($this->configuration['apply_on_subtotal']) {
+        $amount = $order->getSubtotalPrice();
+      }
+      else {
+        $amount = $order->getTotalPrice();
+      }
+      $price = $this->toMinorUnits($amount);
+      $this->UnitsAcompteAmount = $price;
+      $this->UnitsBalanceAmount = 0;
+      $this->UnitsSubtotalAmount = 0;
+      $min_value_paid = $this->getMinValuePaid();
+      $percent_value = $this->getPercentValue();
+      $price_reduce = 0;
+      if ($min_value_paid >= 1) {
+        $pm = new Price($min_value_paid, $amount->getCurrencyCode());
+        $price_reduce = $this->toMinorUnits($pm);
+      }
+      if ($percent_value >= 1) {
+        $reduce_percent = \ceil($price * $percent_value / 100);
+        if ($reduce_percent > $price_reduce) {
+          $price_reduce = $reduce_percent;
+        }
+      }
+      if ($price_reduce) {
+        $this->UnitsSubtotalAmount = $price_reduce;
+        // Dans la mesure ou est sur un reduction par rapport au sous-total, on
+        // complete les autres montant à la somme de base à payer.
+        if ($this->configuration['apply_on_subtotal']) {
+          // Ne change pas, car le montant restant à payer provient uniquement
+          // du sous total.
+          $this->UnitsBalanceAmount = $price - $price_reduce;
+          $totalPrice = $order->getTotalPrice();
+          $UnitstotalPrice = $this->toMinorUnits($totalPrice);
+          $this->UnitsAcompteAmount = $UnitstotalPrice - $this->UnitsBalanceAmount;
+        }
+        else {
+          $this->UnitsBalanceAmount = $price - $price_reduce;
+          $this->UnitsAcompteAmount = $price_reduce;
+        }
       }
     }
-    if ($price_reduce) {
-      // on sauvegarde la difference, en tempon.
-      $order->setData('stripebyhabeuk_acompte_price_paid', $price_reduce);
-      $order->setData('stripebyhabeuk_acompte_price_remainder', $price - $price_reduce);
-      $order->save();
-      return $price_reduce;
-    }
-    
-    return $price;
+    return $this->UnitsAcompteAmount;
+  }
+  
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::amount()
+   */
+  public function amount(Price $amount, OrderInterface $order) {
+    $acompteAmont = $this->acompte($order);
+    // On met la difference en tampon, on ferra la sauvegarde plus tard,( par
+    // createPaymentIntent si tout se passe bien ).
+    $order->setData('stripebyhabeuk_acompte_price_paid', $this->UnitsAcompteAmount);
+    $order->setData('stripebyhabeuk_acompte_price_remainder', $this->UnitsBalanceAmount);
+    return $acompteAmont;
   }
   
   public function getPercentValue() {
@@ -104,6 +168,54 @@ class StripeAcompte extends StripebyhabeukStaticOnSite {
   
   public function getMinValuePaid() {
     return $this->configuration['min_value_paid'];
+  }
+  
+  /**
+   * Recupere le montant à payer
+   *
+   * @param OrderInterface $order
+   * @param boolean $positive
+   *        // permet de retouner un prix positif si à true
+   * @return \Drupal\commerce_price\Price
+   */
+  public function getAcompteAmount(OrderInterface $order, $positive = true) {
+    $UnitsAcompteAmount = $this->acompte($order);
+    if (!$positive)
+      $UnitsAcompteAmount = -$UnitsAcompteAmount;
+    return $this->minorUnitsConverter->fromMinorUnits($UnitsAcompteAmount, $this->getCurrencyCode($order));
+  }
+  
+  /**
+   * Recupere le montant restant à payer.
+   *
+   * @param OrderInterface $order
+   * @param boolean $positive
+   *        // permet de retouner un prix positif si à true
+   * @return \Drupal\commerce_price\Price
+   */
+  public function getBalanceToPay(OrderInterface $order, $positive = true) {
+    // must run acompte() to get ::UnitsBalanceAmount.
+    $this->acompte($order);
+    $val = $this->UnitsBalanceAmount;
+    if (!$positive)
+      $val = -$val;
+    return $this->minorUnitsConverter->fromMinorUnits($val, $this->getCurrencyCode($order));
+  }
+  
+  /**
+   * Recupere le montant à payer
+   *
+   * @param OrderInterface $order
+   * @param boolean $positive
+   *        // permet de retouner un prix positif si à true
+   * @return \Drupal\commerce_price\Price
+   */
+  public function getSubToatlaAmount(OrderInterface $order, $positive = true) {
+    $this->acompte($order);
+    $val = $this->UnitsSubtotalAmount;
+    if (!$positive)
+      $val = -$val;
+    return $this->minorUnitsConverter->fromMinorUnits($val, $this->getCurrencyCode($order));
   }
   
   /**

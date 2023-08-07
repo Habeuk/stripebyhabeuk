@@ -2,3 +2,12 @@ services:
   stripebyhabeuk.manage:
     class: Drupal\stripebyhabeuk\Services\PasserelleStripe
     arguments: []
+  
+  # Permet d'ajouter le prix de au niveau de commerce_summary.  
+  # On souhaite egalement que ces informations soit ajouter apres le shipping, 
+  # donc on utilise 101, car le commerce_shipping.late_order_processor est à 100
+  stripebyhabeuk.late_order_processor:
+    class: Drupal\stripebyhabeuk\Services\StripebyhabeukLateOrderProcessor
+    arguments: ['@commerce_shipping.order_manager']
+    tags:
+      - { name: commerce_order.order_processor, priority: -101 }

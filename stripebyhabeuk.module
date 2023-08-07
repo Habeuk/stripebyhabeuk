@@ -21,6 +21,15 @@ function stripebyhabeuk_page_attachments_alter(array &$attachments) {
   // \Drupal::messenger()->addMessage('stripebyhabeuk_page_attachments_alter');
 }
 
+/**
+ * implement hook_commerce_checkout_pane_info_alter
+ * ( cela permet de remplacer les classes par defaut ).
+ */
+function stripebyhabeuk_commerce_checkout_pane_info_alter(&$definitions) {
+  if (!empty($definitions['payment_information']['class'])) {
+    $definitions['payment_information']['class'] = "Drupal\stripebyhabeuk\Handler\StripebyHabeukPaymentInformation";
+  }
+}
 
 
 

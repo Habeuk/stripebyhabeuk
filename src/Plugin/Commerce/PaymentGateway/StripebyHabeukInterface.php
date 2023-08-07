@@ -42,9 +42,11 @@ interface StripebyHabeukInterface extends OnsitePaymentGatewayInterface, Support
    * Retoune le montant qui doit etre payer.
    *
    * @param Price $montant
+   *        // montant total de la commande.
    * @param OrderInterface $order
-   * @return integer
+   *        // commande
+   * @return integer // le montant de l'acompte.
    */
-  public function acompte(Price $amount, OrderInterface $order);
+  public function amount(Price $amount, OrderInterface $order);
   
 }

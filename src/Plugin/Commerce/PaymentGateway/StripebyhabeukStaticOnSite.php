@@ -16,6 +16,7 @@ use Drupal\commerce_payment\CreditCard;
 use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\stripebyhabeuk\ErrorHelper;
 use Stripe\PaymentIntent;
+use KrepyshSpec\World\Currency;
 
 /**
  * Provides the example for payement on commece_stripe.
@@ -34,6 +35,16 @@ use Stripe\PaymentIntent;
  * )
  */
 class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements StripebyHabeukInterface {
+  /**
+   *
+   * @var string
+   */
+  protected $CurrencyCode = NULL;
+  /**
+   *
+   * @var string
+   */
+  protected $CurrencySymbol = NULL;
   
   public function deletePaymentMethod(PaymentMethodInterface $payment_method) {
     // Delete the remote record.
@@ -119,7 +130,7 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
     $amount = $order->getTotalPrice();
     $intent_id = $order->getData('stripebyhabeuk_payment_intent_id');
     $intent_array = [
-      'amount' => $this->acompte($amount, $order),
+      'amount' => $this->amount($amount, $order),
       'currency' => strtolower($amount->getCurrencyCode()),
       'payment_method_types' => [
         'card'
@@ -147,7 +158,9 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
       // "paiyer la facture".
       $intent_array['confirm'] = false;
       $paymentIntents = $stribeLib->paymentIntents->create($intent_array);
-      $order->setData('stripebyhabeuk_payment_intent_id', $paymentIntents->id)->save();
+      // cette sauvegarde de order, contient des informations prevenant de
+      // amount().
+      $order->setData('stripebyhabeuk_payment_intent_id', $paymentIntents->id);
     }
     else {
       /**
@@ -160,6 +173,10 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
       // On maj les données.
       $paymentIntents = $stribeLib->paymentIntents->update($intent_id, $intent_array);
     }
+    // Cette sauvegarde permet de sauvegarder les differents données ajouter
+    // aucours du processus.
+    // NB: il faut eviter de lancer la sauvegarde au tant que possible.
+    $order->save();
     return $paymentIntents;
   }
   
@@ -168,8 +185,28 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
    * {@inheritdoc}
    * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyHabeukInterface::acompte()
    */
-  public function acompte(Price $amount, OrderInterface $order) {
+  public function amount(Price $amount, OrderInterface $order) {
     return $this->toMinorUnits($amount);
+  }
+  
+  public function getCurrencyCode(OrderInterface $order) {
+    if ($this->CurrencyCode === NULL) {
+      $amount = $order->getTotalPrice();
+      $this->CurrencyCode = $amount->getCurrencyCode();
+    }
+    return $this->CurrencyCode;
+  }
+  
+  public function getCurrencySymbol(OrderInterface $order) {
+    if ($this->CurrencySymbol === NULL) {
+      $code = $this->getCurrencyCode($order);
+      $this->CurrencySymbol = $code;
+      $symboles = Currency::all();
+      if (isset($symboles[$code])) {
+        $this->CurrencySymbol = $symboles[$code]['symbol'];
+      }
+    }
+    return $this->CurrencySymbol;
   }
   
   /**

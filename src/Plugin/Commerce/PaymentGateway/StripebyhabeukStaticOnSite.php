@@ -445,7 +445,6 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
     if (!isset($map[$card_type])) {
       throw new HardDeclineException(sprintf('Unsupported credit card type "%s".', $card_type));
     }
-    
     return $map[$card_type];
   }
   

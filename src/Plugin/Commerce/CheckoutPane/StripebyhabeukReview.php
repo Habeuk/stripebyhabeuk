@@ -7,6 +7,7 @@ use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyHabeukInterface;
 
 /**
  * Permet d'effectuer le paiement sur Stripe.
@@ -40,14 +41,18 @@ class StripebyhabeukReview extends CheckoutPaneBase {
     if (!empty($form_state->getValues()) || !empty($form_state->getUserInput())) {
       return $pane_form;
     }
+    
     // $this->messenger()->addMessage("Load js for confirmation", true);
     /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite $stripe_plugin */
     $stripe_plugin = $this->order->get('payment_gateway')->entity->getPlugin();
     /**
      * On se rassure que le plugin provient de 'stripebyhabeuk_static_onsite';
      */
-    if ($stripe_plugin->getBaseId() !== 'stripebyhabeuk_static_onsite')
+    
+    if (!$stripe_plugin instanceof StripebyHabeukInterface)
       return $pane_form;
+    //
+    $this->messenger()->addStatus('traitement par StripebyHabeukInterface');
     $PaymentIntent = $stripe_plugin->createPaymentIntent($this->order);
     $idHtml = !empty($pane_form['#id']) ? $pane_form['#id'] : Html::getUniqueId('cart-ifs-' . rand(100, 999));
     $pane_form['#attributes']['class'][] = 'kksd5764sdsedzsds';

@@ -36,7 +36,13 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
     $element['titre_cart'] = [
       '#type' => 'html_tag',
       '#tag' => 'h4',
-      "#attributes" => [],
+      "#attributes" => [
+        'class' => [
+          'h6',
+          'font-weight-bold',
+          'mb-1'
+        ]
+      ],
       '#value' => 'Information sur la carte'
     ];
     // ici on cree des champs vide envue de passer la validation de la CB.
@@ -54,7 +60,9 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
       '#tag' => 'section',
       "#attributes" => [
         'id' => $idHtml,
-        'class' => []
+        'class' => [
+          'border p-4'
+        ]
       ]
     ];
     

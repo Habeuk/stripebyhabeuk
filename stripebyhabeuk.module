@@ -45,7 +45,7 @@ function stripebyhabeuk_commerce_payment_gateway_load($entities) {
      * utilisant le plugin stripebyhabeuk_acompte.
      */
     if ($entity->getPluginId() == "stripebyhabeuk_acompte") {
-      \Drupal::messenger()->addStatus('label : ' . $entity->label());
+      // \Drupal::messenger()->addStatus('label : ' . $entity->label());
     }
   }
 }

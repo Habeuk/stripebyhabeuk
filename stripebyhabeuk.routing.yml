@@ -5,11 +5,28 @@ stripebyhabeuk.webhook:
     _controller: '\Drupal\stripebyhabeuk\Controller\StripebyhabeukController::webhookCharge'
   requirements:
     _permission: 'access content'
+    
+
+stripebyhabeuk.payer:
+  path: '/admin/stripebyhabeuk/paid/{reliquat_to_paid}'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\stripebyhabeuk\Controller\StripebyhabeukController::payer'
+  requirements:
+    _permission: 'Administer stripebyhabeuk configuration'
 
 stripebyhabeuk.settings_form:
   path: '/admin/config/system/stripebyhabeuk'
   defaults:
     _title: 'stripe by habeuk settings'
     _form: 'Drupal\stripebyhabeuk\Form\SettingsForm'
+  requirements:
+    _permission: 'Administer stripebyhabeuk configuration'
+    
+stripebyhabeuk.stripe_paiement:
+  path: '/admin/stripebyhabeuk/form/stripe_paiement/{reliquat_to_paid}'
+  defaults:
+    _form: '\Drupal\stripebyhabeuk\Form\StripePaiementForm'
+    _title: 'StripePaiement'
   requirements:
     _permission: 'Administer stripebyhabeuk configuration'

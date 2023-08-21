@@ -7,8 +7,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentInterface;
 use Habeuk\Stripe\GateWay;
 use Drupal\Core\Form\FormStateInterface;
-use Google\Service\ShoppingContent\Amount;
-use Stripe\Service\PaymentIntentService;
+use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\stripebyhabeuk\Entity\ReliquatToPaid;
 
 /**
@@ -64,7 +63,9 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
   }
   
   public function getDisplayLabel() {
-    return " Payer  " . $this->getPercentValue() . "%  maintenant et le reste plus tard ";
+    return $this->t($this->configuration['display_label'], [
+      '%percentValue' => $this->getPercentValue() . "%"
+    ]);
   }
   
   /**
@@ -109,6 +110,8 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
   protected function storeProcessPeriodiquePaiement(OrderInterface $order, PaymentInterface $payment) {
     $values = [
       'amount_paid' => $this->getAcompteAmount($order),
+      'amount_to_paid' => $this->getBalanceToPay($order),
+      'amount_total' => $this->getTotalAmount($order),
       'commerce_order' => $order->id(),
       'name' => $order->label()
     ];
@@ -137,6 +140,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
         $amount = $order->getTotalPrice();
       }
       $price = $this->toMinorUnits($amount);
+      
       $this->UnitsAcompteAmount = $price;
       $this->UnitsBalanceAmount = 0;
       $this->UnitsSubtotalAmount = 0;
@@ -160,10 +164,18 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
         if ($this->configuration['apply_on_subtotal']) {
           // Ne change pas, car le montant restant à payer provient uniquement
           // du sous total.
+          
           $this->UnitsBalanceAmount = $price - $price_reduce;
+          /**
+           * Le service StripebyhabeukLateOrderProcessor retranche le montant
+           * qui doit etre payer plus tard.
+           * Du coup, pour avoir le montant total à payer, getTotalPrice fait le
+           * travail.
+           *
+           * @var \Drupal\commerce_price\Price $totalPrice
+           */
           $totalPrice = $order->getTotalPrice();
-          $UnitstotalPrice = $this->toMinorUnits($totalPrice);
-          $this->UnitsAcompteAmount = $UnitstotalPrice - $this->UnitsBalanceAmount;
+          $this->UnitsAcompteAmount = $this->toMinorUnits($totalPrice);
         }
         else {
           $this->UnitsBalanceAmount = $price - $price_reduce;
@@ -181,6 +193,9 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
    */
   public function amount(Price $amount, OrderInterface $order) {
     $acompteAmont = $this->acompte($order);
+    if ($acompteAmont < 0) {
+      throw new HardDeclineException("Le montant du paiement est invalide");
+    }
     // On met la difference en tampon, on ferra la sauvegarde plus tard,( par
     // createPaymentIntent si tout se passe bien ).
     $order->setData('stripebyhabeuk_acompte_price_paid', $this->UnitsAcompteAmount);
@@ -242,6 +257,18 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
     if (!$positive)
       $val = -$val;
     return $this->minorUnitsConverter->fromMinorUnits($val, $this->getCurrencyCode($order));
+  }
+  
+  /**
+   * Retourne le montant total à payer ( acompte + relicat ).
+   * Cette fonction est utile car la fonction par defaut est affecté par
+   * l'ajustement.
+   * $order->getTotalPrice(), ne retourne pas le montant total reelle mais la
+   * valeur calculer apres les ajustements.
+   */
+  public function getTotalAmount(OrderInterface $order) {
+    $UnitAmountAcompte = $this->acompte($order);
+    return $this->minorUnitsConverter->fromMinorUnits(($UnitAmountAcompte + $this->UnitsBalanceAmount), $this->getCurrencyCode($order));
   }
   
   /**

@@ -24,22 +24,22 @@ class StripebyhabeukOrderSummary extends OrderSummary {
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
     $pane_form = parent::buildPaneForm($pane_form, $form_state, $complete_form);
     
-    $pane_form['test'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'h4',
-      '#value' => 'moyen de paiement : ' . time()
-    ];
-    $pane_form['hello'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'p',
-      '#value' => $this->t('Hello World')
-    ];
+    // $pane_form['test'] = [
+    // '#type' => 'html_tag',
+    // '#tag' => 'h4',
+    // '#value' => 'moyen de paiement : ' . time()
+    // ];
+    // $pane_form['hello'] = [
+    // '#type' => 'html_tag',
+    // '#tag' => 'p',
+    // '#value' => $this->t('Hello World')
+    // ];
     return $pane_form;
   }
   
   public function buildPaneSummary() {
     $summary = parent::buildPaneSummary();
-    $this->messenger()->addWarning(' Affiche de buildPaneSummary() ');
+    // $this->messenger()->addWarning(' Affiche de buildPaneSummary() ');
     return $summary;
   }
   

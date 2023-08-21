@@ -80,9 +80,9 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
     // Refresh the order summary if present.
     $order_summary = $form['sidebar']['order_summary'] ?? $form['order_summary'] ?? NULL;
     if (isset($order_summary)) {
-      $order_summary['test_data'] = [
-        '#markup' => 'new title by AJAX ' . \time()
-      ];
+      // $order_summary['test_data'] = [
+      // '#markup' => 'new title by AJAX ' . \time()
+      // ];
       $selector = sprintf('[data-drupal-selector="%s"]', $order_summary['#attributes']['data-drupal-selector']);
       $response->addCommand(new ReplaceCommand($selector, $order_summary));
     }

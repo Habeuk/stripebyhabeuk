@@ -278,6 +278,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildConfigurationForm($form, $form_state);
+    $form['display_label']['#description'] = $form['display_label']['#description'] . '<br> <i> Use %percentValue to remplace with percent value</i>';
     $form['percent_value'] = [
       '#type' => 'number',
       '#title' => $this->t('percent_value ') . " %",

@@ -146,6 +146,8 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
       $this->UnitsSubtotalAmount = 0;
       $min_value_paid = $this->getMinValuePaid();
       $percent_value = $this->getPercentValue();
+      // $this->messenger()->addError('dans le calcul de accompe : ' .
+      // $percent_value, true);
       $price_reduce = 0;
       if ($min_value_paid >= 1) {
         $pm = new Price($min_value_paid, $amount->getCurrencyCode());

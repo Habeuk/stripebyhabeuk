@@ -100,7 +100,6 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
           'locked' => FALSE,
           'source_id' => 'accompte_amount'
         ]));
-        \Stephane888\Debug\debugLog::kintDebugDrupal($db, 'order_payment_gateway', true);
       }
     }
   }

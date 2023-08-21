@@ -8,6 +8,6 @@ services:
   # donc on utilise 101, car le commerce_shipping.late_order_processor est à 100
   stripebyhabeuk.late_order_processor:
     class: Drupal\stripebyhabeuk\Services\StripebyhabeukLateOrderProcessor
-    arguments: ['@commerce_shipping.order_manager']
+    arguments: []
     tags:
       - { name: commerce_order.order_processor, priority: -101 }

@@ -44,11 +44,15 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
       'get_data' => $PaymentOptionArray
     ];
     if (!empty($PaymentOptionArray['payment_gateway_id'])) {
+      /**
+       *
+       * @var \Drupal\commerce_payment\Entity\PaymentGateway $PaymentGateway
+       */
       $PaymentGateway = PaymentGateway::load($PaymentOptionArray['payment_gateway_id']);
       $db['getBaseId'] = $PaymentGateway->getPlugin()->getBaseId();
       $db['getPluginId'] = $PaymentGateway->getPluginId();
       
-      if ($PaymentGateway->getPluginId() == "stripebyhabeuk_acompte") {
+      if ($PaymentGateway->getPlugin() instanceof \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripeAcompte) {
         /**
          *
          * @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripeAcompte $StripeAcompte

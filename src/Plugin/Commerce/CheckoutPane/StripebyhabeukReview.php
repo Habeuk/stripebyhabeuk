@@ -52,7 +52,7 @@ class StripebyhabeukReview extends CheckoutPaneBase {
     if (!$stripe_plugin instanceof StripebyHabeukInterface)
       return $pane_form;
     //
-    $this->messenger()->addStatus('traitement par StripebyHabeukInterface');
+    // $this->messenger()->addStatus('traitement par StripebyHabeukInterface');
     $PaymentIntent = $stripe_plugin->createPaymentIntent($this->order);
     $idHtml = !empty($pane_form['#id']) ? $pane_form['#id'] : Html::getUniqueId('cart-ifs-' . rand(100, 999));
     $pane_form['#attributes']['class'][] = 'kksd5764sdsedzsds';

@@ -29,7 +29,20 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
     // add ajax command.
     if (!empty($pane_form['payment_method'])) {
       // dump($pane_form);
+      // dump($this->order->getData('stripebyhabeuk_select_payment_method'));
+      /**
+       * Dans la methode "validatePaneForm" on sauvegarde le choix de
+       * l'utilisateur au niveau de la commande.
+       * Cela pose un probleme lorsque l'utilisateur actualise la page.
+       * Donc, on va verifier si il ya eut un choix precedant et le mettre par
+       * defaut.
+       */
+      $payment_method = $this->order->getData('stripebyhabeuk_select_payment_method');
+      if (!empty($payment_method['id'])) {
+        $pane_form['payment_method']['#default_value'] = $payment_method['id'];
+      }
     }
+    
     return $pane_form;
   }
   
@@ -65,8 +78,6 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
       $this->order->save();
       // $db['PaymentOption'] = $PaymentOption->toArray();
     }
-    // \Stephane888\Debug\debugLog::kintDebugDrupal($db, 'validatePaneForm',
-    // true);
   }
   
   public static function ajaxRefresh(array $form, FormStateInterface $form_state) {

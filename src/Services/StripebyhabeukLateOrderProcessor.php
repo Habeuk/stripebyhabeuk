@@ -39,18 +39,18 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
     /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $order_payment_gateway */
     $order_payment_gateway = $order->get('payment_gateway')->entity;
     $PaymentOptionArray = $order->getData('stripebyhabeuk_select_payment_method');
-    $db = [
-      'order_payment_gateway' => $order_payment_gateway,
-      'get_data' => $PaymentOptionArray
-    ];
+    // $db = [
+    // 'order_payment_gateway' => $order_payment_gateway,
+    // 'get_data' => $PaymentOptionArray
+    // ];
     if (!empty($PaymentOptionArray['payment_gateway_id'])) {
       /**
        *
        * @var \Drupal\commerce_payment\Entity\PaymentGateway $PaymentGateway
        */
       $PaymentGateway = PaymentGateway::load($PaymentOptionArray['payment_gateway_id']);
-      $db['getBaseId'] = $PaymentGateway->getPlugin()->getBaseId();
-      $db['getPluginId'] = $PaymentGateway->getPluginId();
+      // $db['getBaseId'] = $PaymentGateway->getPlugin()->getBaseId();
+      // $db['getPluginId'] = $PaymentGateway->getPluginId();
       
       if ($PaymentGateway->getPlugin() instanceof \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripeAcompte) {
         /**
@@ -58,10 +58,10 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
          * @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripeAcompte $StripeAcompte
          */
         $StripeAcompte = $PaymentGateway->getPlugin();
-        $db['StripeAcompte'] = $StripeAcompte;
-        $db['totalPrice'] = $order->getTotalPrice();
-        $db['totalPaid'] = $order->getTotalPaid();
-        $db['sub-total'] = $order->getSubtotalPrice();
+        // $db['StripeAcompte'] = $StripeAcompte;
+        // $db['totalPrice'] = $order->getTotalPrice();
+        // $db['totalPaid'] = $order->getTotalPaid();
+        // $db['sub-total'] = $order->getSubtotalPrice();
         if ($StripeAcompte->AcompteApplyOnSubtotal()) {
           $buildExplication = [
             '#type' => 'html_tag',
@@ -91,7 +91,7 @@ class StripebyhabeukLateOrderProcessor implements OrderProcessorInterface {
           $buildExplication
         ];
         $output = \Drupal::service('renderer')->renderPlain($build);
-        $db['output'] = $output;
+        // $db['output'] = $output;
         $order->addAdjustment(new Adjustment([
           'type' => 'accompte',
           'label' => $output,

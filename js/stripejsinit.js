@@ -97,7 +97,7 @@ if (window.Stripe) {
 							});
 						} else {
 							if (configs.payment_status === 'succeeded') {
-								form.querySelector('input.button--primary[name="op"]').click();
+								form.querySelector('.button--primary[name="op"]').click();
 							}
 						}
 					}
@@ -156,7 +156,7 @@ if (window.Stripe) {
 										).value = paymentMethod.id;
 										// Submit the form.
 										form
-											.querySelector('input.button--primary[name="op"]')
+											.querySelector('.button--primary[name="op"]')
 											.click();
 									} else if (error) {
 										console.log("error : ", error);

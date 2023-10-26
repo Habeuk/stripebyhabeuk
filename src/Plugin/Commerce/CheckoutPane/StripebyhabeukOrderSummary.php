@@ -11,7 +11,7 @@ use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\OrderSummary;
  * @CommerceCheckoutPane(
  *   id = "stripebyhabeuk_order_Summary",
  *   label = @Translation("Order summary by StripeByHabeuk"),
- *   default_step = "_sidebar",
+ *   default_step = "",
  *   wrapper_element = "container",
  * )
  */

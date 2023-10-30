@@ -43,7 +43,7 @@ class StripebyhabeukReview extends CheckoutPaneBase {
     }
     
     // $this->messenger()->addMessage("Load js for confirmation", true);
-    /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite $stripe_plugin */
+    /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\Stripebyhabeuk $stripe_plugin */
     $stripe_plugin = $this->order->get('payment_gateway')->entity->getPlugin();
     /**
      * On se rassure que le plugin provient de 'stripebyhabeuk_static_onsite';

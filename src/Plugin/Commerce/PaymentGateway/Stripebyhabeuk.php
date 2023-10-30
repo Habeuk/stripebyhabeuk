@@ -26,7 +26,7 @@ use KrepyshSpec\World\Currency;
  *   label = @Translation("stripe by habeuk"),
  *   display_label = @Translation("stripe by habeuk"),
  *    forms = {
- *     "add-payment-method" = "Drupal\stripebyhabeuk\PluginForm\StripebyhabeukStaticOnSiteCheckoutForm",
+ *     "add-payment-method" = "Drupal\stripebyhabeuk\PluginForm\StripebyhabeukCheckoutForm",
  *   },
  *   payment_method_types = {"credit_card"},
  *   credit_card_types = {
@@ -34,7 +34,7 @@ use KrepyshSpec\World\Currency;
  *   },
  * )
  */
-class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements StripebyHabeukInterface {
+class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukInterface {
   /**
    *
    * @var string
@@ -186,7 +186,7 @@ class StripebyhabeukStaticOnSite extends OnsitePaymentGatewayBase implements Str
    * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyHabeukInterface::acompte()
    */
   public function amount(Price $amount, OrderInterface $order) {
-    return $this->toMinorUnits($amount);
+    return $this->minorUnitsConverter->toMinorUnits($amount);
   }
   
   public function getCurrencyCode(OrderInterface $order) {

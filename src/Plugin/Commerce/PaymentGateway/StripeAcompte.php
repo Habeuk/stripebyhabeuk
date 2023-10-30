@@ -18,7 +18,7 @@ use Drupal\stripebyhabeuk\Entity\ReliquatToPaid;
  *   label = @Translation("stripe by habeuk acompte"),
  *   display_label = @Translation("stripe by habeuk acompte"),
  *    forms = {
- *     "add-payment-method" = "Drupal\stripebyhabeuk\PluginForm\StripebyhabeukStaticOnSiteCheckoutForm",
+ *     "add-payment-method" = "Drupal\stripebyhabeuk\PluginForm\StripebyhabeukCheckoutForm",
  *   },
  *   payment_method_types = {"credit_card"},
  *   credit_card_types = {
@@ -26,7 +26,7 @@ use Drupal\stripebyhabeuk\Entity\ReliquatToPaid;
  *   },
  * )
  */
-class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeukAcompteInterface {
+class StripeAcompte extends Stripebyhabeuk implements StripebyHabeukAcompteInterface {
   /**
    * Permet de mettre en cache la valeur de l'acompte aucours d'un cycle.
    *
@@ -73,7 +73,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
    * paiementIntent.
    *
    * {@inheritdoc}
-   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::createPayment()
+   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\Stripebyhabeuk::createPayment()
    */
   public function createPayment(PaymentInterface $payment, $capture = TRUE) {
     $paymentIntents = parent::createPayment($payment, $capture);
@@ -128,7 +128,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
   /**
    *
    * {@inheritdoc}
-   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::acompte()
+   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\Stripebyhabeuk::acompte()
    * @return number
    */
   public function acompte(OrderInterface $order) {
@@ -139,7 +139,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
       else {
         $amount = $order->getTotalPrice();
       }
-      $price = $this->toMinorUnits($amount);
+      $price = $this->minorUnitsConverter->toMinorUnits($amount);
       
       $this->UnitsAcompteAmount = $price;
       $this->UnitsBalanceAmount = 0;
@@ -151,7 +151,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
       $price_reduce = 0;
       if ($min_value_paid >= 1) {
         $pm = new Price($min_value_paid, $amount->getCurrencyCode());
-        $price_reduce = $this->toMinorUnits($pm);
+        $price_reduce = $this->minorUnitsConverter->toMinorUnits($pm);
       }
       if ($percent_value >= 1) {
         $reduce_percent = \ceil($price * $percent_value / 100);
@@ -177,7 +177,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
            * @var \Drupal\commerce_price\Price $totalPrice
            */
           $totalPrice = $order->getTotalPrice();
-          $this->UnitsAcompteAmount = $this->toMinorUnits($totalPrice);
+          $this->UnitsAcompteAmount = $this->minorUnitsConverter->toMinorUnits($totalPrice);
         }
         else {
           $this->UnitsBalanceAmount = $price - $price_reduce;
@@ -191,7 +191,7 @@ class StripeAcompte extends StripebyhabeukStaticOnSite implements StripebyHabeuk
   /**
    *
    * {@inheritdoc} amount
-   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite::amount()
+   * @see \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\Stripebyhabeuk::amount()
    */
   public function amount(Price $amount, OrderInterface $order) {
     $acompteAmont = $this->acompte($order);

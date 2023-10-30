@@ -11,7 +11,7 @@ use Drupal\Component\Utility\Html;
 /**
  * Provides payment form for Stripe.
  */
-class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implements TrustedCallbackInterface {
+class StripebyhabeukCheckoutForm extends PaymentMethodAddForm implements TrustedCallbackInterface {
   
   /**
    * Builds the credit card form.
@@ -25,7 +25,7 @@ class StripebyhabeukStaticOnSiteCheckoutForm extends PaymentMethodAddForm implem
    */
   protected function buildCreditCardForm(array $element, FormStateInterface $form_state) {
     // Set our key to settings array.
-    /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripebyhabeukStaticOnSite $plugin */
+    /** @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\Stripebyhabeuk $plugin */
     $plugin = $this->plugin;
     
     /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */

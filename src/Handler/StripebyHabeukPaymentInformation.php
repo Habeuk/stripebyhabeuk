@@ -25,24 +25,22 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
    * {@inheritdoc}
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
-    $pane_form = parent::buildPaneForm($pane_form, $form_state, $complete_form);
-    // add ajax command.
-    if (!empty($pane_form['payment_method'])) {
-      // dump($pane_form);
-      // dump($this->order->getData('stripebyhabeuk_select_payment_method'));
-      /**
-       * Dans la methode "validatePaneForm" on sauvegarde le choix de
-       * l'utilisateur au niveau de la commande.
-       * Cela pose un probleme lorsque l'utilisateur actualise la page.
-       * Donc, on va verifier si il ya eut un choix precedant et le mettre par
-       * defaut.
-       */
-      $payment_method = $this->order->getData('stripebyhabeuk_select_payment_method');
-      if (!empty($payment_method['id'])) {
-        $pane_form['payment_method']['#default_value'] = $payment_method['id'];
-      }
+    
+    /**
+     * Dans la methode "validatePaneForm" on sauvegarde le choix de
+     * l'utilisateur au niveau de la commande.
+     * Cela pose un probleme lorsque l'utilisateur actualise la page.
+     * Donc, on va verifier s'il ya eut un choix precedant et le mettre par
+     * defaut.
+     */
+    $payment_method = $this->order->getData('stripebyhabeuk_select_payment_method');
+    if (!empty($payment_method['id'])) {
+      $userInput = $form_state->getUserInput();
+      $userInput['payment_information']['payment_method'] = $payment_method['id'];
+      $form_state->setUserInput($userInput);
     }
     
+    $pane_form = parent::buildPaneForm($pane_form, $form_state, $complete_form);
     return $pane_form;
   }
   
@@ -55,11 +53,6 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
       'payment_information',
       'payment_method'
     ]);
-    // \Stephane888\Debug\debugLog::$max_depth = 7;
-    // $db = [
-    // 'payment_method' => $payment_method_id,
-    // 'pane_form' => $pane_form
-    // ];
     /**
      * à ce stade la methode de paiement choisit n'est pas encore sauvegarder,
      * donc on va mettre la methode choisit par l'utilisateur dans les datas de
@@ -76,7 +69,6 @@ class StripebyHabeukPaymentInformation extends PaymentInformation {
       $PaymentOption = $pane_form['#payment_options'][$payment_method_id];
       $this->order->setData('stripebyhabeuk_select_payment_method', $PaymentOption->toArray());
       $this->order->save();
-      // $db['PaymentOption'] = $PaymentOption->toArray();
     }
   }
   

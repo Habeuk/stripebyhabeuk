@@ -210,7 +210,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
   }
   
   /**
-   * Cette methode est executé apres la validation qui qui presente les methodes
+   * Cette methode est executé apres la validation qui presente les methodes
    * de paiements.
    * $payment_details : represente les données fournit par le formulaire
    * "add-payment-method".
@@ -229,6 +229,15 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
         
         throw new InvalidRequestException(sprintf('$payment_details must contain the %s key.', $required_key));
       }
+    }
+    
+    if (!empty($payment_details['stripebyhabeuk_save_cb'])) {
+      \drupal::messenger()->addStatus('reutilisable : oui ');
+      $payment_method->setReusable(TRUE);
+    }
+    else {
+      \drupal::messenger()->addStatus('reutilisable : non ');
+      $payment_method->setReusable(false);
     }
     
     $remote_payment_method = $this->UpdatePaymentMethods($payment_method, $payment_details);

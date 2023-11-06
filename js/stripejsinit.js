@@ -57,9 +57,9 @@ if (window.Stripe) {
 										}
 										console.log(result);
 										//alert('verifie les données de confirm paiement');
-									}).catch((error)=>{
+									}).catch((error) => {
 										console.log('error : ', error);
-										
+
 									});
 							});
 						}
@@ -108,23 +108,34 @@ if (window.Stripe) {
 						 */
 						const elements = stripe.elements();
 
-						// Set up Stripe.js and Elements to use in checkout form
-						const style = {
-							base: {
-								color: "#32325d",
-								fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-								fontSmoothing: "antialiased",
-								fontSize: "18px",
-								"::placeholder": {
-									color: "#aab7c4"
-								}
-							},
-							invalid: {
-								color: "#fa755a",
-								iconColor: "#fa755a"
+						// Set up Stripe.js and Elements to use in checkout form						
+						const options = {
+							hidePostalCode: true,
+							style: {
+								base: {
+									iconColor: '#32325d',
+									color: '#32325d',
+									fontWeight: '500',
+									fontFamily: 'Roboto, Open Sans, Segoe UI, sans-serif',
+									fontSize: '16px',
+									fontSmoothing: 'antialiased',
+									':-webkit-autofill': {
+										color: '#fce883',
+									},
+									'::placeholder': {
+										color: '#aba3a9',
+									},
+								},
+								invalid: {
+									iconColor: '#fb1818',
+									color: '#fb1818',
+								},
 							},
 						};
-						const cardElement = elements.create('card', { style });
+						/**
+						 * https://stripe.com/docs/js/elements_object/create_element?type=card
+						 */
+						const cardElement = elements.create('card', options);
 						cardElement.mount(item);
 						// console.log('form getElementById : ', form.querySelector("#payment-method-id" + configs.idhtml));
 						if (form) {

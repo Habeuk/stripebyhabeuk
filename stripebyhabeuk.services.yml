@@ -11,3 +11,9 @@ services:
     arguments: []
     tags:
       - { name: commerce_order.order_processor, priority: -101 }
+
+  stripebyhabeuk.list_paiement:
+    class: Drupal\stripebyhabeuk\EventSubscriber\ListPaiement
+    arguments: []
+    tags:
+      - { name: event_subscriber }

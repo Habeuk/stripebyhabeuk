@@ -3,7 +3,7 @@
 
 stripejsinit:
   js:
-    js/stripejsinit.js: {}
+    js/stripejsinit.js: { minified: false, preprocess: false }
   css:
     component:
       css/stripejsinit.css: {preprocess: false}

@@ -10,6 +10,9 @@ use Habeuk\Stripe\GateWay;
 use Stripe\PaymentIntent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\commerce_price\MinorUnitsConverterInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Returns responses for stripe by habeuk routes.
@@ -42,12 +45,63 @@ class StripebyhabeukController extends ControllerBase {
   protected $endpointSecret = '';
   
   /**
-   * Builds the response.
+   * Permet d'analyser les methodes de paiement.
    */
-  public function build() {
-    $build['content'] = [
-      '#type' => 'item',
-      '#markup' => $this->t('It works!')
+  public function PaiementMethod(Request $request) {
+    $build = [];
+    $query = $this->entityTypeManager()->getStorage('commerce_payment_method')->getQuery();
+    $query->pager(20);
+    $query->sort('created', 'DESC');
+    $ids = $query->execute();
+    $header = [
+      'id' => '#id',
+      'payment_gateway' => 'payment_gateway',
+      'payment_gateway_id' => 'payment_gateway_id',
+      'remote_id' => 'remote_id',
+      'reusable' => 'reusable',
+      'is_default' => 'is_default',
+      'expires' => 'expires',
+      'created' => 'Date creation',
+      'operations' => 'operations'
+    ];
+    $rows = [];
+    if ($ids) {
+      $entities = $this->entityTypeManager()->getStorage('commerce_payment_method')->loadMultiple($ids);
+      foreach ($entities as $entity) {
+        /**
+         *
+         * @var \Drupal\commerce_payment\Entity\PaymentMethod $entity
+         */
+        $id = $entity->id();
+        $rows[$id] = [
+          'id' => $id,
+          'payment_gateway' => $entity->getPaymentGateway()->label(),
+          'payment_gateway_id' => $entity->getPaymentGatewayId(),
+          'remote_id' => $entity->getRemoteId(),
+          'reusable' => $entity->isReusable() ? 'oui' : 'non',
+          'is_default' => $entity->isDefault() ? 'oui' : 'non',
+          'expires' => $entity->getExpiresTime(),
+          'created' => $entity->getCreatedTime(),
+          'operations' => [
+            'data' => $this->buildOperations($request, $entity)
+          ]
+        ];
+      }
+    }
+    $build['table'] = [
+      '#type' => 'table',
+      '#header' => $header,
+      '#title' => 'Titre de la table',
+      '#rows' => $rows,
+      '#empty' => 'Aucun contenu',
+      '#attributes' => [
+        'class' => [
+          'page-content00'
+        ]
+      ]
+    ];
+    $build['pager'] = [
+      '#type' => 'pager'
     ];
     return $build;
   }
@@ -191,4 +245,64 @@ class StripebyhabeukController extends ControllerBase {
     return $reponse;
   }
   
+  /**
+   * Builds a renderable list of operation links for the entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *        The entity on which the linked operations will be performed.
+   *        
+   * @return array A renderable array of operation links.
+   *        
+   * @see \Drupal\Core\Entity\EntityListBuilder::buildRow()
+   */
+  public function buildOperations(Request $request, ContentEntityInterface $entity) {
+    $build = [
+      '#type' => 'operations',
+      '#links' => $this->getOperations($request, $entity)
+    ];
+    
+    return $build;
+  }
+  
+  /**
+   *
+   * {@inheritdoc}
+   */
+  public function getOperations(Request $request, ContentEntityInterface $entity) {
+    $operations = [];
+    if ($entity->access('update') && $entity->hasLinkTemplate('edit-form')) {
+      $operations['edit'] = [
+        'title' => $this->t('Edit'),
+        'weight' => 10,
+        'url' => $this->ensureDestination($request, $entity->toUrl('edit-form'))
+      ];
+    }
+    if ($entity->access('delete') && $entity->hasLinkTemplate('delete-form')) {
+      $operations['delete'] = [
+        'title' => $this->t('Delete'),
+        'weight' => 100,
+        'url' => $this->ensureDestination($request, $entity->toUrl('delete-form'))
+      ];
+    }
+    return $operations;
+  }
+  
+  /**
+   * Ensures that a destination is present on the given URL.
+   *
+   * @param \Drupal\Core\Url $url
+   *        The URL object to which the destination should be added.
+   *        
+   * @return \Drupal\Core\Url The updated URL object.
+   */
+  protected function ensureDestination(Request $request, Url $url) {
+    return $url->mergeOptions([
+      'query' => [
+        'destination' => $request->getPathInfo()
+      ]
+    ]);
+  }
+  
 }
+  
+

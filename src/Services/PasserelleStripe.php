@@ -65,7 +65,6 @@ class PasserelleStripe {
         ]
       ]);
       $result = $paymentIntents->toArray();
-      \Stephane888\Debug\debugLog::kintDebugDrupal($result, 'paidInvoice', true);
       return $result;
     }
     catch (\Stripe\Exception\CardException $e) {

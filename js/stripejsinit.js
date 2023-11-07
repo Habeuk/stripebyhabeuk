@@ -25,10 +25,8 @@ if (window.Stripe) {
 								// Fully customizable with appearance API.
 								appearance: {/*...*/ },
 							};
-
 							// Set up Stripe.js and Elements to use in checkout form, passing the client secret obtained in a previous step
 							const elements = stripe.elements(options);
-
 							// Create and mount the Payment Element
 							const paymentElement = elements.create('payment');
 							paymentElement.mount(item);
@@ -97,7 +95,7 @@ if (window.Stripe) {
 							});
 						} else {
 							if (configs.payment_status === 'succeeded') {
-								form.querySelector('.button--primary[name="op"]').click();
+								form.querySelector('[type="submit"][name="op"]').click();
 							}
 						}
 					}
@@ -146,6 +144,9 @@ if (window.Stripe) {
 								) {
 									return true;
 								}
+								// hide bouton 
+								form.querySelector('[type="submit"][name="op"]').style.opacity=0.5;
+								form.querySelector('[type="submit"][name="op"]').disabled = true;			
 								// We don't want to let default form submission happen here,
 								// which would refresh the page.
 								event.preventDefault();
@@ -161,13 +162,13 @@ if (window.Stripe) {
 									// Handle result.error or result.paymentMethod
 									if (paymentMethod) {
 										//Ajouter le payment-method-id dans le form.
-										console.log("paymentMethod : ", paymentMethod);
 										form.querySelector(
 											"#payment-method-id" + configs.idhtml
 										).value = paymentMethod.id;
+										form.querySelector('[type="submit"][name="op"]').disabled = false;	
 										// Submit the form.
 										form
-											.querySelector('.button--primary[name="op"]')
+											.querySelector('[type="submit"][name="op"]')
 											.click();
 									} else if (error) {
 										console.log("error : ", error);

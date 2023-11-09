@@ -48,6 +48,25 @@ class PasserelleStripe {
   
   /**
    *
+   * @param string $id
+   * @return \Stripe\PaymentIntent
+   */
+  public function getPaymentIndent($id) {
+    try {
+      $this->initApp();
+      return $this->stripeApi->paymentIntents->retrieve($id);
+    }
+    catch (\Error $e) {
+      $errors = [
+        'msg' => $e->getMessage(),
+        'trace' => $e->getTrace()
+      ];
+      \Stephane888\Debug\debugLog::kintDebugDrupal($errors, 'getPaymentIndent', true);
+    }
+  }
+  
+  /**
+   *
    * @param float $montant
    *        //montant de la commande.
    * @param String $titre

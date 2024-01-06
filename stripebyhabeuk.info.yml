@@ -3,3 +3,5 @@ type: module
 description: module permettant de faire un paiement sur sur skype via un service
 package: Custom
 core_version_requirement: ^9 || ^10
+dependencies:
+  - commerce:commerce_price

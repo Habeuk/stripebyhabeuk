@@ -45,7 +45,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
    * @var string
    */
   protected $CurrencySymbol = NULL;
-  
+
   public function deletePaymentMethod(PaymentMethodInterface $payment_method) {
     // Delete the remote record.
     $payment_method_remote_id = $payment_method->getRemoteId();
@@ -60,13 +60,12 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       if ($remote_payment_method->customer) {
         $remote_payment_method->detach();
       }
-    }
-    catch (ApiErrorException $e) {
+    } catch (ApiErrorException $e) {
       ErrorHelper::handleException($e);
     }
     $payment_method->delete();
   }
-  
+
   /**
    * Elle se charge d'effectuer le paiement via l'API et on cree l'entite
    * payement si le paiement a reussi ou est en attente.
@@ -100,8 +99,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       if (is_object($paymentIntents->last_payment_error)) {
         $error = $paymentIntents->last_payment_error;
         $decline_message = sprintf('%s: %s', $error->type, $error->message ?? '');
-      }
-      else {
+      } else {
         $decline_message = $paymentIntents->last_payment_error;
       }
       throw new HardDeclineException($decline_message);
@@ -118,7 +116,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     // return $paymentIntents, help order module that extend this module.
     return $paymentIntents;
   }
-  
+
   /**
    * Permet de creer ou de mettre à jour PaymentIntent.
    * S'assure egalement que pour une commande on a un unique paymentIntent.
@@ -142,7 +140,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       'payment_method' => $payment_method->getRemoteId(),
       'capture_method' => 'automatic'
     ];
-    
+
     $customer_remote_id = $this->getRemoteCustomerId($order->getCustomer());
     if (!empty($customer_remote_id)) {
       $intent_array['customer'] = $customer_remote_id;
@@ -161,8 +159,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       // cette sauvegarde de order, contient des informations prevenant de
       // amount().
       $order->setData('stripebyhabeuk_payment_intent_id', $paymentIntents->id);
-    }
-    else {
+    } else {
       /**
        * On verifie si l'utilisateur a deja payé ou pas.
        */
@@ -179,7 +176,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     $order->save();
     return $paymentIntents;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -188,7 +185,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
   public function amount(Price $amount, OrderInterface $order) {
     return $this->minorUnitsConverter->toMinorUnits($amount);
   }
-  
+
   public function getCurrencyCode(OrderInterface $order) {
     if ($this->CurrencyCode === NULL) {
       $amount = $order->getTotalPrice();
@@ -196,7 +193,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     }
     return $this->CurrencyCode;
   }
-  
+
   public function getCurrencySymbol(OrderInterface $order) {
     if ($this->CurrencySymbol === NULL) {
       $code = $this->getCurrencyCode($order);
@@ -208,7 +205,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     }
     return $this->CurrencySymbol;
   }
-  
+
   /**
    * Cette methode est executé apres la validation qui presente les methodes
    * de paiements.
@@ -226,20 +223,19 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     ];
     foreach ($required_keys as $required_key) {
       if (empty($payment_details[$required_key])) {
-        
+
         throw new InvalidRequestException(sprintf('$payment_details must contain the %s key.', $required_key));
       }
     }
-    
+
     if (!empty($payment_details['stripebyhabeuk_save_cb'])) {
-      \drupal::messenger()->addStatus('reutilisable : oui ');
+      // \drupal::messenger()->addStatus('reutilisable : oui ');
       $payment_method->setReusable(TRUE);
-    }
-    else {
-      \drupal::messenger()->addStatus('reutilisable : non ');
+    } else {
+      // \drupal::messenger()->addStatus('reutilisable : non ');
       $payment_method->setReusable(false);
     }
-    
+
     $remote_payment_method = $this->UpdatePaymentMethods($payment_method, $payment_details);
     $payment_method->card_type = $this->mapCreditCardType($remote_payment_method['brand']);
     $payment_method->card_number = $remote_payment_method['last4'];
@@ -250,7 +246,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     $payment_method->setExpiresTime($expires);
     $payment_method->save();
   }
-  
+
   /**
    * Permet de completer les informations sur la methode de paiment (ajouter le
    * client, ajouter le billing information).
@@ -293,11 +289,10 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
         $customer_id = $customer->id;
         $this->setRemoteCustomerId($owner, $customer_id);
         $owner->save();
-      }
-      else {
+      } else {
         $email = NULL;
       }
-      
+
       if ($customer_id && $email) {
         $payment_method_data = [
           'email' => $email
@@ -319,12 +314,11 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
         ]);
       }
       return $stripe_payment_method->card;
-    }
-    catch (ApiErrorException $e) {
+    } catch (ApiErrorException $e) {
       ErrorHelper::handleException($e);
     }
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -334,24 +328,24 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     $operations = parent::buildPaymentOperations();
     return $operations;
   }
-  
+
   public function getPublishableKey() {
     return $this->configuration['publishable_key'];
   }
-  
+
   public function getSecretKey() {
     return $this->configuration['secret_key'];
   }
-  
+
   public function voidPayment(PaymentInterface $payment) {
   }
-  
+
   public function capturePayment(PaymentInterface $payment, Price $amount = NULL) {
   }
-  
+
   public function refundPayment(PaymentInterface $payment, Price $amount = NULL) {
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -364,7 +358,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       'enable_credit_card_icons' => true
     ] + parent::defaultConfiguration();
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -380,7 +374,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       '#default_value' => $this->configuration['publishable_key'],
       '#required' => TRUE
     ];
-    
+
     $form['secret_key'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Secrete key'),
@@ -388,16 +382,16 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       '#default_value' => $this->configuration['secret_key'],
       '#required' => TRUE
     ];
-    
+
     $form['enable_credit_card_icons'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable credit cart icons'),
       '#default_value' => $this->configuration['enable_credit_card_icons']
     ];
-    
+
     return $form;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -410,16 +404,14 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
       try {
         $GateWayTest = new GateWay($values['secret_key'], $values['publishable_key']);
         $GateWayTest->testValidationKey($expected_livemode);
-      }
-      catch (ExceptionStripe $e) {
+      } catch (ExceptionStripe $e) {
         $form_state->setError($form['secret_key'], $e->getMessage());
-      }
-      catch (ApiErrorException $e) {
+      } catch (ApiErrorException $e) {
         $form_state->setError($form['secret_key'], $e->getMessage());
       }
     }
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -432,7 +424,7 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     $this->configuration['publishable_key'] = $values['publishable_key'];
     $this->configuration['enable_credit_card_icons'] = $values['enable_credit_card_icons'];
   }
-  
+
   /**
    * Maps the Stripe credit card type to a Commerce credit card type.
    *
@@ -456,5 +448,4 @@ class Stripebyhabeuk extends OnsitePaymentGatewayBase implements StripebyHabeukI
     }
     return $map[$card_type];
   }
-  
 }

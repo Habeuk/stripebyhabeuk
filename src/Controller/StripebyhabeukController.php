@@ -18,18 +18,18 @@ use Symfony\Component\HttpFoundation\Request;
  * Returns responses for stripe by habeuk routes.
  */
 class StripebyhabeukController extends ControllerBase {
-  
+
   /**
    * The minor units converter.
    *
    * @var \Drupal\commerce_price\MinorUnitsConverterInterface
    */
   protected $minorUnitsConverter;
-  
+
   function __construct(MinorUnitsConverterInterface $minor_units_converter) {
     $this->minorUnitsConverter = $minor_units_converter;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -37,13 +37,13 @@ class StripebyhabeukController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static($container->get('commerce_price.minor_units_converter'));
   }
-  
+
   /**
    *
    * @var string
    */
   protected $endpointSecret = '';
-  
+
   /**
    * Permet d'analyser les methodes de paiement.
    */
@@ -52,6 +52,7 @@ class StripebyhabeukController extends ControllerBase {
     $query = $this->entityTypeManager()->getStorage('commerce_payment_method')->getQuery();
     $query->pager(20);
     $query->sort('created', 'DESC');
+    $query->accessCheck(False);
     $ids = $query->execute();
     $header = [
       'id' => '#id',
@@ -105,7 +106,7 @@ class StripebyhabeukController extends ControllerBase {
     ];
     return $build;
   }
-  
+
   /**
    * Permet d'effectuer les paiements reliquat_to_paid.
    * ( Mais il faudra que cela se fasse au niveau de l'entiter, ainsi on pourra
@@ -134,14 +135,13 @@ class StripebyhabeukController extends ControllerBase {
         ]
       ];
       $paymentIntent = $this->createPaymentIntent($ReliquatToPaid);
-    }
-    else {
+    } else {
       $this->messenger()->addStatus(" Aucun relicat pour cette commande ");
     }
-    
+
     return $build;
   }
-  
+
   /**
    * Permet de creer ou de mettre à jour PaymentIntent.
    * S'assure egalement que pour une commande on a un unique paymentIntent.
@@ -177,7 +177,7 @@ class StripebyhabeukController extends ControllerBase {
      * @var \Drupal\stripebyhabeuk\Plugin\Commerce\PaymentGateway\StripeAcompte $stripebyhabeuk
      */
     $stripebyhabeuk = $PaymentGatewayManager->createInstance('stripebyhabeuk_acompte');
-    
+
     $order = \Drupal\commerce_order\Entity\Order::load($entity->get('commerce_order')->target_id);
     if ($order) {
       // $customer_remote_id =
@@ -186,7 +186,7 @@ class StripebyhabeukController extends ControllerBase {
       // $intent_array['customer'] = $customer_remote_id;
       // }
     }
-    
+
     $GateWay = new GateWay($stripebyhabeuk->getSecretKey());
     /**
      *
@@ -201,8 +201,7 @@ class StripebyhabeukController extends ControllerBase {
       // cette sauvegarde de order, contient des informations prevenant de
       // amount().
       $entity->set('payment_intent_id', $paymentIntents->id);
-    }
-    else {
+    } else {
       /**
        * On verifie si l'utilisateur a deja payé ou pas.
        */
@@ -216,7 +215,7 @@ class StripebyhabeukController extends ControllerBase {
     $entity->save();
     return $paymentIntents;
   }
-  
+
   /**
    * --
    */
@@ -227,7 +226,7 @@ class StripebyhabeukController extends ControllerBase {
     ];
     return $this->reponse($configs, 200);
   }
-  
+
   /**
    *
    * @param array|string $configs
@@ -244,7 +243,7 @@ class StripebyhabeukController extends ControllerBase {
     $reponse->setContent($configs);
     return $reponse;
   }
-  
+
   /**
    * Builds a renderable list of operation links for the entity.
    *
@@ -260,10 +259,10 @@ class StripebyhabeukController extends ControllerBase {
       '#type' => 'operations',
       '#links' => $this->getOperations($request, $entity)
     ];
-    
+
     return $build;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -286,7 +285,7 @@ class StripebyhabeukController extends ControllerBase {
     }
     return $operations;
   }
-  
+
   /**
    * Ensures that a destination is present on the given URL.
    *
@@ -302,7 +301,4 @@ class StripebyhabeukController extends ControllerBase {
       ]
     ]);
   }
-  
 }
-  
-

@@ -52,6 +52,7 @@ class StripebyhabeukController extends ControllerBase {
     $query = $this->entityTypeManager()->getStorage('commerce_payment_method')->getQuery();
     $query->pager(20);
     $query->sort('created', 'DESC');
+    $query->accessCheck(False);
     $ids = $query->execute();
     $header = [
       'id' => '#id',
@@ -305,4 +306,3 @@ class StripebyhabeukController extends ControllerBase {
   
 }
   
-
